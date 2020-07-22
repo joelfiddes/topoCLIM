@@ -6,7 +6,7 @@ require(pracma)
 require(hydroGOF)
 require(wesanderson)
 
-# TAS script 
+# TAS script
 # handle different calender
 # Setup ========================================================================
 
@@ -18,12 +18,12 @@ mylat = 46.83066
 ENDDATE_CLIM="2099-12-31"
 
 # files
-indir="/home/joel/sim/qmap/CORDEX/"
-files = list.files(path=indir, pattern="TS.nc$", recursive=T, full.name=T)
+indir="/home/joel/sim/qmap/CORDEX/output/EUR-22/"
+files = list.files(path=indir, pattern="TS_ll.nc$", recursive=T, full.name=T)
 
-hist_files = files[ grep('tas', files)][grep('historical', files[ grep('tas', files)])]     
-rcp26_files = files[ grep('tas', files)][grep('rcp26', files[ grep('tas', files)])]     
-rcp85_files = files[ grep('tas', files)][grep('rcp85', files[ grep('tas', files)])]     
+hist_files = files[ grep('tas', files)][grep('historical', files[ grep('tas', files)])]
+rcp26_files = files[ grep('tas', files)][grep('rcp26', files[ grep('tas', files)])]
+rcp85_files = files[ grep('tas', files)][grep('rcp85', files[ grep('tas', files)])]
 
 # Cordex data
 #hist_file= "/home/joel/sim/qmap/CORDEX/output/EUR-22/GERICS/MOHC-HadGEM2-ES/historical/r1i1p1/REMO2015/v1/day/tas/tas_EUR-22_MOHC-HadGEM2-ES_historical_r1i1p1_GERICS-REMO2015_v1_day_TS.nc"
@@ -60,8 +60,8 @@ for (hist_file in hist_files){
 	tas =ncvar_get(nc, 'tas') 		# !!HARDCODE!!
 	lon =ncvar_get(nc, 'lon')
 	lat =ncvar_get(nc, 'lat')
-	myx =which.min(abs(lon - mylon)) 
-	myy = which.min(abs(lat - mylat)) 
+	myx =which.min(abs(lon - mylon))
+	myy = which.min(abs(lat - mylat))
 
 	# extract timeseries corresponding to qmap (all)
 	tas_all = tas[myx,myy,]
@@ -85,7 +85,7 @@ for (hist_file in hist_files){
 		ts.dat.days <- time
 		origin.pcict <- as.PCICt(origin, cal)
 		ts.dat.pcict <- origin.pcict + (ts.dat.days * seconds.per.day)
-		datesPl <- ts.dat.pcict 
+		datesPl <- ts.dat.pcict
 		}
 
 	if(cal=="proleptic_gregorian"){
@@ -171,8 +171,8 @@ for (rcp26_file in rcp26_files){
 	tas =ncvar_get(nc, 'tas') 		# !!HARDCODE!!
 	lon =ncvar_get(nc, 'lon')
 	lat =ncvar_get(nc, 'lat')
-	myx =which.min(abs(lon - mylon)) 
-	myy = which.min(abs(lat - mylat)) 
+	myx =which.min(abs(lon - mylon))
+	myy = which.min(abs(lat - mylat))
 
 	# extract timeseries corresponding to qmap (all)
 	tas_all = tas[myx,myy,]
@@ -196,7 +196,7 @@ for (rcp26_file in rcp26_files){
 		ts.dat.days <- time
 		origin.pcict <- as.PCICt(origin, cal)
 		ts.dat.pcict <- origin.pcict + (ts.dat.days * seconds.per.day)
-		datesPl <- ts.dat.pcict 
+		datesPl <- ts.dat.pcict
 		}
 
 	if(cal=="proleptic_gregorian"){
@@ -206,7 +206,7 @@ for (rcp26_file in rcp26_files){
 	# convert 360 to 365/366 calender with interpolation
 	#greg_cal = seq(as.Date('1970-01-01'), as.Date('2005-12-31'), "days") # hardcoded
 	if(cal=="360_day"){
-		greg_cal_rcp = seq(as.Date(substring(datesPl[1],1,10)), as.Date(ENDDATE_CLIM), "days") 
+		greg_cal_rcp = seq(as.Date(substring(datesPl[1],1,10)), as.Date(ENDDATE_CLIM), "days")
 		}
 
 	if(cal=="proleptic_gregorian"){
@@ -263,8 +263,8 @@ for (rcp85_file in rcp85_files){
 	tas =ncvar_get(nc, 'tas') 		# !!HARDCODE!!
 	lon =ncvar_get(nc, 'lon')
 	lat =ncvar_get(nc, 'lat')
-	myx =which.min(abs(lon - mylon)) 
-	myy = which.min(abs(lat - mylat)) 
+	myx =which.min(abs(lon - mylon))
+	myy = which.min(abs(lat - mylat))
 
 	# extract timeseries corresponding to qmap (all)
 	tas_all = tas[myx,myy,]
@@ -288,7 +288,7 @@ for (rcp85_file in rcp85_files){
 		ts.dat.days <- time
 		origin.pcict <- as.PCICt(origin, cal)
 		ts.dat.pcict <- origin.pcict + (ts.dat.days * seconds.per.day)
-		datesPl <- ts.dat.pcict 
+		datesPl <- ts.dat.pcict
 		}
 
 	if(cal=="proleptic_gregorian"){
@@ -367,7 +367,7 @@ rcp85_year$MEAN=apply(rcp85_year[,2:(dim(rcp85_year)[2]-1)],1, mean, na.rm = TRU
 
 #===envelope plots========================================================================
 pdf("/home/joel/manuscripts/qmap/plots/TA_TS.pdf")
-# caption: Mean annual near surface air temperature at the Weissfluhjoch (2540m asl)  showing corrected historical, RCP2.6 and RCP8.5 timseries. Observations and uncorrected historical data are also shown for comparison. The coloured envelops indicate +/- 1 SD of the model spread and multi-modal mean is given by the bold line. 
+# caption: Mean annual near surface air temperature at the Weissfluhjoch (2540m asl)  showing corrected historical, RCP2.6 and RCP8.5 timseries. Observations and uncorrected historical data are also shown for comparison. The coloured envelops indicate +/- 1 SD of the model spread and multi-modal mean is given by the bold line.
 lwd=3
 plot(rcp26_year$Group.1, rcp26_year$MEAN, xlim=c(1970,2100),ylim=c(270,280), type='l', col=mycol[1], lwd=lwd, ylab="Air temperacture (K)", xlab=" ")
 #lines(rcp26_year$Group.1, rcp26_year$MEAN- rcp26_year$SD, col=mycol[1])
@@ -409,7 +409,7 @@ dev.off()
 #hist_qmap =hist[start_cp_cord:end_cp_cord]
 
 
-#hist_month = aggregate(hist_noqmap, list(dates_month), mean)[,2] 
+#hist_month = aggregate(hist_noqmap, list(dates_month), mean)[,2]
 #hist_qmap_month = aggregate(hist_qmap, list(dates_month), mean)[,2]
 
 
@@ -422,7 +422,7 @@ dates_cp = greg_cal_hist[start_cp_cord:end_cp_cord]
 dates_month = substring(dates_cp,1,7)
 
 obs = obs_daily[1:length(hist_cp)]
-obs_month = aggregate(obs, list(dates_month), mean)[,2] 
+obs_month = aggregate(obs, list(dates_month), mean)[,2]
 
 df=as.data.frame(hist_nqmap)
 hist_month = aggregate(df[start_cp_cord:end_cp_cord,], list(dates_month), mean)
@@ -528,25 +528,3 @@ abline(0,1)
 
 
 # we evaluate with rcp data in period 2006-2017
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
