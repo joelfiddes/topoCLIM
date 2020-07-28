@@ -31,7 +31,6 @@ latend=50
 lm = LogonManager()
 if not lm.is_logged_on():
 
-    lm = LogonManager()
     lm.logoff()
     lm.is_logged_on()
 
