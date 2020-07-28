@@ -9,24 +9,30 @@
 # requires CDO
 
 # variable
-res=0.5
 indir="/home/joel/sim/qmap/CORDEX/output/EUR-44/"
-coordsPath = paste0(indir, "/coords.txt") # describes reprojection
-lonE = 5
-lonW=11
-latS=45
-latN=48
+res = 0.5 # output grid resolution in degrees
+freq='3hr' #'day' or '3hr' to subset day my temporal frequency
 
-# construct coords config
-gridtype = 'lonlat'
-xsize = (lonW-lonE)/res
-ysize = (latN-latS)/res
-xfirst = lonE
-xinc = res
-yfirst = latS
-yinc = res
+# define domain here:
+lonE <- 5
+lonW<-11
+latS<-45
+latN<-48
+
+# define and construct coords config for remapbil
+coordsPath <- paste0(indir, "/coords.txt") # describes reprojection
+
+# params to write
+gridtype <- 'lonlat'
+xsize <- (lonW-lonE)/res
+ysize <- (latN-latS)/res
+xfirst <- lonE
+xinc <- res
+yfirst <- latS
+yinc <- res
 
 
+# write remapbil config file
 write(paste0("gridtype = ",gridtype),paste0(indir, "/coords.txt"))
 write(paste0("xsize = ",xsize),paste0(indir, "/coords.txt"), append=T)
 write(paste0("ysize = ",ysize),paste0(indir, "/coords.txt"), append=T)
@@ -35,30 +41,40 @@ write(paste0("xinc = ",xinc),paste0(indir, "/coords.txt"), append=T)
 write(paste0("yfirst = ",yfirst),paste0(indir, "/coords.txt"), append=T)
 write(paste0("yinc = ",yinc),paste0(indir, "/coords.txt"), append=T)
 
-file="/home/joel/sim/qmap/CORDEX/output/EUR-44/KNMI/ICHEC-EC-EARTH/rcp26/r12i1p1/RACMO22E/v1/day/pr/pr_EUR-44_ICHEC-EC-EARTH_rcp26_r12i1p1_KNMI-RACMO22E_v1_day_20060101-20101231.nc"
-	basename= strsplit(file,".nc")
-system(paste0("cdo sellonlatbox,",lonE,",",lonW,",",latS,",",latN," ", file," " ,basename,"_SUB.nc"))
-system(paste0("cdo remapbil,",coordsPath," ", file," " ,basename,"_ll3.nc"))
-
-system(paste0("cdo remapbil,",coordsPath," -sellonlatbox,",lonE,",",lonW,",",latS,",",latN," ", file," " ,basename,"_ll.nc"))
-system(paste0("cdo sellonlatbox,",lonE,",",lonW,",",latS,",",latN," -remapbil,",coordsPath," ", file," " ,basename,"_ll2.nc"))
 #code
-files = list.files(path=indir, pattern=".nc$", recursive=T, full.name=T)
-
+filesAll <- list.files(path=indir, pattern=".nc$", recursive=T, full.name=T)
+freq_index <- grep(freq, filesAll)
+files <- filesAll[freq_index]
+donefiles = list.files(path=indir, pattern="ll.nc$", recursive=T, full.name=T)
+donefilesIndex = which(!files %in% donefiles)
+filestodo = files[donefilesIndex]
 # exclude all _ll.nc files here in case of reprocessing otherwise get .._ll_ll.nc files!
-for ( file in files ) {
+for ( file in filestodo ) {
 
 	basename= strsplit(file,".nc")
 	#system(paste0("cdo remapbil,",coordsPath," -sellonlatbox,",lonE,",",lonW,",",latS,",",latN," ", file," " ,basename,"_ll.nc"))
-	#system(paste0("cdo sellonlatbox,",lonE,",",lonW,",",latS,",",latN," -remapbil,",coordsPath," ", file," " ,basename,"_ll2.nc")) #we need to reproject and THEN cut to get correct results (takes 0.04s longer - not signif)
 	system(paste0("cdo remapbil,",coordsPath," ", file," " ,basename,"_ll.nc")) # just need to remapbil to smaller domain and implicitly cuts
-	system(paste0("rm ", file))
+	#system(paste0("rm ", file))
 }
 
+# delete all original downloads 100GB ->
+filesProcessed = list.files(path=indir, pattern="_ll.nc$", recursive=T, full.name=T)
+filesAll = list.files(path=indir, pattern=".nc$", recursive=T, full.name=T)
+keepIndex = which(filesAll %in% filesProcessed)
+files2keep = filesAll[keepIndex]
 
-files = list.files(path=indir, pattern=".nc$", recursive=T, full.name=T)
+rmIndex = which(!filesAll %in% filesProcessed)
+files2rm = filesAll[rmIndex]
 
-base = substring(files, 1,nchar(files)-23)
+for (i in files2rm){
+	system(paste0("rm ", i))
+}
+
+if(freq=='day'){strsplitPar <- 23}
+if(freq=='3hr'){strsplitPar <- 31}
+files = list.files(path=indir, pattern="_ll.nc$", recursive=T, full.name=T)
+
+base = substring(files, 1,nchar(files)-strsplitPar)
 base2 = unique(base)
 for (mybase in base2){
 #mybase2 = unlist(strsplit(mybase,'/'))[[length(unlist(strsplit(mybase,'/')))]]
@@ -66,3 +82,5 @@ for (mybase in base2){
 system(paste0("cdo -b F64 -f nc2 mergetime ",mybase,"* ", mybase,"TS.nc"))
 print(paste0("concatenated file: ", mybase,"TS.nc"))
 }
+
+final_TS = list.files(path=indir, pattern="_TS.nc$", recursive=T, full.name=T)

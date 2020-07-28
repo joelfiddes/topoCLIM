@@ -18,7 +18,7 @@ mylat = 46.83066
 ENDDATE_CLIM="2099-12-31"
 
 # files
-indir="/home/joel/sim/qmap/CORDEX/output/EUR-22/"
+indir="/home/joel/sim/qmap/CORDEX/output/EUR-44/"
 files = list.files(path=indir, pattern="TS_ll.nc$", recursive=T, full.name=T)
 
 hist_files = files[ grep('tas', files)][grep('historical', files[ grep('tas', files)])]
@@ -78,6 +78,9 @@ for (hist_file in hist_files){
 	# calender dependent section
 	cal = nc$dim$time$calendar
 	print(cal)
+	# standard cal is assumed to equal proleptic_gregorian
+	if(cal=='standard'){cal <- "proleptic_gregorian"}
+	if(cal=='gregorian'){cal <- "proleptic_gregorian"}
 
 	if(cal=="360_day"){
 		cal <- "360_day"
@@ -189,6 +192,9 @@ for (rcp26_file in rcp26_files){
 	# calender dependent section
 	cal = nc$dim$time$calendar
 	print(cal)
+	# standard cal is assumed to equal proleptic_gregorian
+	if(cal=='standard'){cal <- "proleptic_gregorian"}
+	if(cal=='gregorian'){cal <- "proleptic_gregorian"}
 
 	if(cal=="360_day"){
 		cal <- "360_day"
@@ -282,6 +288,10 @@ for (rcp85_file in rcp85_files){
 	cal = nc$dim$time$calendar
 	print(cal)
 
+# standard cal is assumed to equal proleptic_gregorian
+	if(cal=='standard'){cal <- "proleptic_gregorian"}
+	if(cal=='gregorian'){cal <- "proleptic_gregorian"}
+
 	if(cal=="360_day"){
 		cal <- "360_day"
 		seconds.per.day <- 86400
@@ -366,7 +376,7 @@ rcp85_year$SD=apply(rcp85_year[,2:dim(rcp85_year)[2]],1, sd, na.rm = TRUE)
 rcp85_year$MEAN=apply(rcp85_year[,2:(dim(rcp85_year)[2]-1)],1, mean, na.rm = TRUE)
 
 #===envelope plots========================================================================
-pdf("/home/joel/manuscripts/qmap/plots/TA_TS.pdf")
+pdf("/home/joel/manuscripts/qmap/plots/TA_TS2.pdf")
 # caption: Mean annual near surface air temperature at the Weissfluhjoch (2540m asl)  showing corrected historical, RCP2.6 and RCP8.5 timseries. Observations and uncorrected historical data are also shown for comparison. The coloured envelops indicate +/- 1 SD of the model spread and multi-modal mean is given by the bold line.
 lwd=3
 plot(rcp26_year$Group.1, rcp26_year$MEAN, xlim=c(1970,2100),ylim=c(270,280), type='l', col=mycol[1], lwd=lwd, ylab="Air temperacture (K)", xlab=" ")
@@ -474,7 +484,7 @@ lwd=3
 # lines( hist_month$MEAN,type='l', col='red', lwd=lwd)
 # lines(hist_qmap_month$MEAN,type='l', col='blue', lwd=lwd)
 #legend("bottomright", c("OBS", "CLIM", "CLIM_QM"), col=c("black","red", "blue"), lwd=lwd)
-pdf("/home/joel/manuscripts/qmap/plots/TA_CDF.pdf")
+pdf("/home/joel/manuscripts/qmap/plots/TA_CDF2.pdf")
  plot(ecdf(obs_month), ylab="cdf",  col=mycol[1], xlab="TA (K)", main=" " , lwd=lwd,lty=1)
  lines(ecdf(hist_month$MEAN),  col=mycol[2], lwd=lwd)
  lines(ecdf(hist_qmap_month$MEAN),  col=mycol[3], lwd=lwd)
@@ -509,7 +519,7 @@ doy_clim = aggregate(hist$MEAN[start_cp_cord:end_cp_cord], list(doy), mean)
 doy_qm = aggregate(hist_qmap$MEAN[start_cp_cord:end_cp_cord], list(doy), mean)
 
 #
-pdf("/home/joel/manuscripts/qmap/plots/TA_DOY.pdf")
+pdf("/home/joel/manuscripts/qmap/plots/TA_DOY2.pdf")
 plot(doy_obs$x, type='l', ylim=c(260,290),col=mycol[1],lwd=lwd,lty=2, xlab='DOY', ylab='Air temperature [k]')
 lines(doy_clim$x, type='l', col=mycol[2], lwd=lwd)
 lines(doy_qm$x, type='l', col=mycol[3],lwd=lwd)
