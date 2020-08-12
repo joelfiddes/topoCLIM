@@ -1,7 +1,12 @@
 import glob
 import os
-outdir="/home/joel/sim/qmap/test/pyout/"
+import xarray as xr
+import pandas as pd
+
+outdir="/home/joel/sim/qmap/test/pyout_3h/"
 domain='EUR-44'
+time_frequency='3hr' #'day'
+ts_dir=outdir+"aresult/"
 
 # define domain here:
 lonE = int(5)
@@ -24,13 +29,13 @@ f.write("yfirst = " + str(latS)+"\n")
 f.write("yinc = "+ str(res)+"\n")
 f.close()
 
-ts_dir=outdir+"TS/"
+# time merge
 if not os.path.exists(ts_dir):
 	os.makedirs(ts_dir)
 
 mydownloads = glob.glob(outdir+"*.nc")
 mydownloads.sort()
-root  = [i.split('day', 1)[0] for i in mydownloads]
+root  = [i.split(time_frequency, 1)[0] for i in mydownloads]
 root_unique = list(set(root))
 
 for ru in root_unique:
@@ -52,3 +57,30 @@ for ru in root_unique:
 #cleanup
 os.system("rm "+ ts_dir+"*_TS_ALL.nc")
 os.system("rm "+ ts_dir+"*_TS.nc")
+
+# analyse results
+results = glob.glob(ts_dir+"*.nc")
+
+
+
+d=[]
+
+for my_file in results:
+	ds = xr.open_dataset(my_file)
+	basename = os.path.basename(my_file)
+	start = ds['time'][1].data  
+	end = ds['time'][-1].data  
+	nvars = len(ds.data_vars) 
+
+	d.append(
+	{
+	'File': basename,
+	'Start': start,
+	'End': end,
+	'Variables': nvars
+
+	}
+
+
+		)
+df =pd.DataFrame(d)[['File', 'Start', 'End', 'Variables']]
