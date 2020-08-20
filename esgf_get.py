@@ -22,8 +22,8 @@ for handler in logging.root.handlers[:]:
 logging.basicConfig(level=logging.INFO, filename=outdir+"logfile", filemode="w",
                         format="%(asctime)-15s %(levelname)-8s %(message)s")
 # variables
-vars=['tasmax']# 'uas', 'vas')'tas', 'pr', 'ps', 'hurs', 'rsds','rlds','sfcWind'
-expers=['rcp26', 'rcp85']
+vars=['hurs']#'tasmin', 'tasmax']# 'uas', 'vas')'tas', 'pr', 'ps', 'hurs', 'rsds','rlds','sfcWind'
+expers=['historical','rcp26', 'rcp85']
 # define domain here (once figured out rlat/lon translation):
 # lonE = 5
 # lonW = 11
@@ -69,7 +69,7 @@ for exper in expers:
             time_frequency=time_frequency,
             variable=var
             )
-        logging.info("Found hits: " + str(ctx.hit_count))
+        #logging.info("Found hits: " + str(ctx.hit_count))
         print("Found hits: " + str(ctx.hit_count))
 
         # f = open("demofile2.txt", "a")
@@ -78,7 +78,7 @@ for exper in expers:
 
         # loop through hits
         for hit in range(0,ctx.hit_count):
-            logging.info("retrieving hit: " +str(hit+1)+"/"+str(ctx.hit_count) +" "+var+" "+exper)
+            #logging.info("retrieving hit: " +str(hit+1)+"/"+str(ctx.hit_count) +" "+var+" "+exper)
             print("retrieving hit: " +str(hit+1)+"/"+str(ctx.hit_count) +" "+var+" "+exper)
             result = ctx.search()[hit]
             result.dataset_id
@@ -95,7 +95,7 @@ for exper in expers:
 
                 outname = my_url.split('/')[-1]
                 if os.path.isfile(outdir+outname):
-                    logging.info (outname+" already downloaded!")
+                    #logging.info (outname+" already downloaded!")
                     print(outname+" already downloaded!")
                     continue
 
@@ -103,6 +103,7 @@ for exper in expers:
 
                 try:
                     ds = xr.open_dataset(my_url, decode_times=False)
+                    logging.info("Downloaded"+my_url)
                 except IOError:
                     logging.info("Server likely down skipping"+my_url)
                     print("Server likely down skipping"+my_url)

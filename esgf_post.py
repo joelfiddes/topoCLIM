@@ -3,9 +3,9 @@ import os
 import xarray as xr
 import pandas as pd
 
-outdir="/home/joel/sim/qmap/test/pyout_3h/"
+outdir="/home/joel/sim/qmap/test/pyout/"
 domain='EUR-44'
-time_frequency='3hr' #'day'
+time_frequency='day' #3hr' #
 ts_dir=outdir+"aresult/"
 
 # define domain here:
