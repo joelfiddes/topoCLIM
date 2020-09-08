@@ -22,7 +22,7 @@ for handler in logging.root.handlers[:]:
 logging.basicConfig(level=logging.INFO, filename=outdir+"logfile", filemode="w",
                         format="%(asctime)-15s %(levelname)-8s %(message)s")
 # variables
-vars=['hurs']#'tasmin', 'tasmax']# 'uas', 'vas')'tas', 'pr', 'ps', 'hurs', 'rsds','rlds','sfcWind'
+vars=['hurs', 'tasmin', 'tasmax', 'uas', 'vas', 'tas', 'pr', 'ps', 'rsds','rlds']#,'sfcWind'
 expers=['historical','rcp26', 'rcp85']
 # define domain here (once figured out rlat/lon translation):
 # lonE = 5
@@ -89,7 +89,7 @@ for exper in expers:
 
                 my_url = file.opendap_url
                 if my_url is None:
-                    logging.info("No URL available in hit " + str(hit))
+                    #logging.info("No URL available in hit " + str(hit))
                     print("No URL available in hit " + str(hit))
                     continue
 
@@ -105,8 +105,9 @@ for exper in expers:
                     ds = xr.open_dataset(my_url, decode_times=False)
                     logging.info("Downloaded"+my_url)
                 except IOError:
-                    logging.info("Server likely down skipping"+my_url)
+                    #logging.info("Server likely down skipping"+my_url)
                     print("Server likely down skipping"+my_url)
+                    continue
                 #logging.info(ds)
                 #rp = ds[rotate_pole]
                 da = ds[myvar]
