@@ -54,48 +54,40 @@ par(mfrow=c(8,2))
 
 # Obs Era5 data downscaled by toposcale, can be resampled
 obsfile = "/home/joel/sim/qmap/wfj_long_1H.csv"#
-obs=read.csv(obsfile)
 myvars=c('TA', 'RH', 'VW', 'DW', 'P', 'ISWR', 'ILWR','PINT')#,  'pr', 'uas', 'vas')
 
+for (var in myvars){
+print(var)
+	# Obs 1980-01-01 - 2017-12-31 ==========================================================================
+	#read obs variable TA
 
 
+	if(var=="TA"){obsindex <-11; convFact <-1; modindex <- 2} # K
+		if(var=="RH"){obsindex <-8; convFact <-100; modindex <- 3} # kgm-2s-1
+			if(var=="VW"){obsindex <-12; convFact <-1; modindex <- 4}# Pa
+				if(var=="DW"){obsindex <-2; convFact <-1; modindex <- 5} # % 0-100
+					if(var=="P"){obsindex <-5; convFact <-1; modindex <- 6}	# Wm-2
+						if(var=="ISWR"){obsindex <-4; convFact <-1; modindex <- 7}# Wm-2
+							if(var=="ILWR"){obsindex <-3; convFact <-1; modindex <- 8}# ms-1
+								if(var=="PINT"){obsindex <-6; convFact <-1; modindex <- 9}# ms-1
+	obs=read.csv(obsfile)
+	obs_var=obs[,obsindex]*convFact	# !!HARDCODE!!
 
-
-
+	# aggregate obs to daily resolution
+	obs_datetime= strptime(obs$datetime,format="%Y-%m-%d %H:%M:%S")
 
 	# Cordex historical "1970-01-01 12" UTC" to 2005-12-30 12"======================
-
-
-for (hist_file in hist_files){
-	stop = FALSE
-	print(hist_file)
-	nc=read.csv(hist_file, sep=',', header=T, na.strings = "-999")
-
 	hist_qmap_list <- list()
 	hist_nqmap <- list()
 	hist_dates<-list()
 	hist_qmap_season_list <- list()
 
-	for (var in myvars){
-	print(var)
-	# Obs 1980-01-01 - 2017-12-31 ==========================================================================
-	#read obs variable TA
+	for (hist_file in hist_files){
 
-
-		if(var=="TA"){obsindex <-11; convFact <-1; modindex <- 2} # K
-			if(var=="RH"){obsindex <-8; convFact <-100; modindex <- 3} # kgm-2s-1
-				if(var=="VW"){obsindex <-12; convFact <-1; modindex <- 4}# Pa
-					if(var=="DW"){obsindex <-2; convFact <-1; modindex <- 5} # % 0-100
-						if(var=="P"){obsindex <-5; convFact <-1; modindex <- 6}	# Wm-2
-							if(var=="ISWR"){obsindex <-4; convFact <-1; modindex <- 7}# Wm-2
-								if(var=="ILWR"){obsindex <-3; convFact <-1; modindex <- 8}# ms-1
-									if(var=="PINT"){obsindex <-6; convFact <-1; modindex <- 9}# ms-1
-
-		obs_var=obs[,obsindex]*convFact	# !!HARDCODE!!
-
-		# aggregate obs to daily resolution
-		obs_datetime= strptime(obs$datetime,format="%Y-%m-%d %H:%M:%S")
-
+		modfile=hist_file
+		print(modfile)
+		# define variable and gridbox
+		nc=read.csv(modfile, sep=',', header=T, na.strings = "-999")
 
 		tas =nc[,modindex]
 
@@ -106,10 +98,10 @@ for (hist_file in hist_files){
 
 
 		tas_all = tas
-		if(all(is.na(tas_all)==TRUE)){print("no data found, skipping this file");stop=TRUE;next}
+		if(all(is.na(tas_all)==TRUE)){print("no data found, skipping this file");next}
 
 		#if length(which(is.na(tas)))  > 50
-		if(anyNA(tas_all)==TRUE){print("NAs found, skipping this file");stop=TRUE;next}
+		if(anyNA(tas_all)==TRUE){print("NAs found, skipping this file");next}
 		# define time
 
 		datesPl= nc[,1]
@@ -155,9 +147,9 @@ for (hist_file in hist_files){
 		ei = which(greg_cal_hist==endDateHist)
 
 		# add to list
-		hist_qmap_list[[var]] <- list(hist[si:ei])
-		hist_nqmap[[var]] <- list(tas[si:ei])
-		hist_dates[[var]]<- list(greg_cal_hist[si:ei] )
+		hist_qmap_list[[hist_file]] <- list(hist[si:ei])
+		hist_nqmap[[hist_file]] <- list(tas[si:ei])
+		hist_dates[[hist_file]]<- list(greg_cal_hist[si:ei] )
 		
 
 
@@ -186,50 +178,42 @@ for (hist_file in hist_files){
 		hist_season[spring_index]<-hist_spring
 
 
-		hist_qmap_season_list[[var]] <- list(hist_season[si:ei])
-		}
-
-		if (stop){next}
-		modelName = unlist(strsplit(hist_file,'/'))[ 7]
-		df=as.data.frame(hist_qmap_season_list)
-		names(df)<-names(hist_qmap_season_list)
-		datetime<-greg_cal_hist[si:ei] 
-		df2=data.frame(datetime, round(df[1:7],1), round(df[8],4))
-		write.csv(df2,file = paste0(outdir,modelName, "_QMAP.txt"), row.names=FALSE)
+		hist_qmap_season_list[[hist_file]] <- list(hist_season[si:ei])
 }
+
+		hist_dates = greg_cal_hist[si:ei]
+		mydata=hist_qmap_list
+		modelNames = sapply(strsplit(names(mydata),'/'), "[", 7)
+		df=as.data.frame(mydata)
+		names(df)<-modelNames
+		df$Date<-greg_cal_hist[si:ei] 
+		save(df,file = paste0(outdir,"hist_",var))
+
 	# Cordex rcp26 =======================================================================
-
-
-	for (rcp26_file in rcp26_files){
-		
-	stop = FALSE
-	print(rcp26_file)
-	nc=read.csv(rcp26_file, sep=',', header=T, na.strings = "-999")
 
 	rcp26_qmap_list <- list()
 	rcp26_nqmap <- list()
 	rcp26_dates <-list()
 	rcp26_qmap_season_list <- list()
+	for (rcp26_file in rcp26_files){
 
-	for (var in myvars){
-		print(var)
-		if(var=="TA"){ modindex <- 2} # K
-			if(var=="RH"){modindex <- 3} # kgm-2s-1
-				if(var=="VW"){modindex <- 4}# Pa
-					if(var=="DW"){modindex <- 5} # % 0-100
-						if(var=="P"){modindex <- 6}	# Wm-2
-							if(var=="ISWR"){modindex <- 7}# Wm-2
-								if(var=="ILWR"){modindex <- 8}# ms-1
-									if(var=="PINT"){ modindex <- 9}# ms-1
+		modfile=rcp26_file
+
+		# define variable and gridbox
+		nc=read.csv(modfile, sep=',', header=T, na.strings = "-999")
+		
 
 		tas =nc[,modindex]
 
 		#print(head(tas))
-		if (sum(is.na(tas))==length(tas)){print ("No data found, skipping file");stop=TRUE;next }
+		if (sum(is.na(tas))==length(tas)){
+			print ("No data found, skipping file");next
+		}
+
 
 		tas_all = tas
-		if(all(is.na(tas_all)==TRUE)){print("no data found, skipping this file");stop=TRUE;next}
-		if(anyNA(tas_all)==TRUE){print("NAs found, skipping this file");stop=TRUE;next}
+		if(all(is.na(tas_all)==TRUE)){print("no data found, skipping this file");next}
+		if(anyNA(tas_all)==TRUE){print("NAs found, skipping this file");next}
 		# define time
 
 		datesPl= nc[,1]
@@ -249,9 +233,9 @@ for (hist_file in hist_files){
 		ei = which(greg_cal_rcp==endDateRcp26)
 
 		# assign to list
-		rcp26_qmap_list[[var]] <- list(rcp26[si:ei])
-		rcp26_nqmap[[var]] <- list(tas[si:ei])
-		rcp26_dates[[var]]<- list(greg_cal_rcp[si:ei])
+		rcp26_qmap_list[[rcp26_file]] <- list(rcp26[si:ei])
+		rcp26_nqmap[[rcp26_file]] <- list(tas[si:ei])
+		rcp26_dates[[rcp26_file]]<- list(greg_cal_rcp[si:ei])
 		
 		# do seasonal qmap
 		rcp26_summer = doQmap(tas[summer_index],pars_summer)
@@ -266,54 +250,42 @@ for (hist_file in hist_files){
 		rcp26_season[spring_index]<-rcp26_spring
 
 
-		rcp26_qmap_season_list[[var]] <- list(rcp26_season[si:ei])
+		rcp26_qmap_season_list[[rcp26_file]] <- list(rcp26_season[si:ei])
 		}
 		
+		rcp26_dates = greg_cal_rcp[si:ei]
+		mydata=rcp26_qmap_list
+		modelNames = sapply(strsplit(names(mydata),'/'), "[", 7)
+		df=as.data.frame(mydata)
+		names(df)<-modelNames
+		df$Date<- greg_cal_rcp[si:ei]
+		save(df,file = paste0(outdir,"rcp26_",var))
 
 
-		if (stop){next}
-		modelName = unlist(strsplit(rcp26_file,'/'))[ 7]
-		df=as.data.frame(rcp26_qmap_season_list)
-		names(df)<-names(rcp26_qmap_season_list)
-		datetime<-greg_cal_rcp[si:ei]
-		df2=data.frame(datetime, round(df[1:7],1), round(df[8],4))
-		write.csv(df2,file = paste0(outdir,modelName, "_QMAP.txt"), row.names=FALSE)
-	}
-
-
-		# Cordex rcp26 =======================================================================
-
-
-	for (rcp85_file in rcp85_files){
-		
-	stop = FALSE
-	print(rcp85_file)
-	nc=read.csv(rcp85_file, sep=',', header=T, na.strings = "-999")
-
+	# Cordex rcp85 2006-2100=======================================================================
 	rcp85_qmap_list <- list()
 	rcp85_nqmap <- list()
 	rcp85_dates <-list()
 	rcp85_qmap_season_list <- list()
+	for (rcp85_file in rcp85_files){
 
-	for (var in myvars){
-		print(var)
-		if(var=="TA"){ modindex <- 2} # K
-			if(var=="RH"){modindex <- 3} # kgm-2s-1
-				if(var=="VW"){modindex <- 4}# Pa
-					if(var=="DW"){modindex <- 5} # % 0-100
-						if(var=="P"){modindex <- 6}	# Wm-2
-							if(var=="ISWR"){modindex <- 7}# Wm-2
-								if(var=="ILWR"){modindex <- 8}# ms-1
-									if(var=="PINT"){ modindex <- 9}# ms-1
+		modfile=rcp85_file
+
+		# define variable and gridbox
+		nc=read.csv(modfile, sep=',', header=T, na.strings = "-999")
+		
 
 		tas =nc[,modindex]
 
-		#print(head(tas))
-		if (sum(is.na(tas))==length(tas)){print ("No data found, skipping file");stop=TRUE;next }
+		print(head(tas))
+		if (sum(is.na(tas))==length(tas)){
+			print ("No data found, skipping file");next
+		}
+
 
 		tas_all = tas
-		if(all(is.na(tas_all)==TRUE)){print("no data found, skipping this file");stop=TRUE;next}
-		if(anyNA(tas_all)==TRUE){print("NAs found, skipping this file");stop=TRUE;next}
+		if(all(is.na(tas_all)==TRUE)){print("no data found, skipping this file");next}
+		if(anyNA(tas_all)==TRUE){print("NAs found, skipping this file");next}
 		# define time
 
 		datesPl= nc[,1]
@@ -333,9 +305,9 @@ for (hist_file in hist_files){
 		ei = which(greg_cal_rcp==endDateRcp26)
 
 		# assign to list
-		rcp85_qmap_list[[var]] <- list(rcp85[si:ei])
-		rcp85_nqmap[[var]] <- list(tas[si:ei])
-		rcp85_dates[[var]]<- list(greg_cal_rcp[si:ei])
+		rcp85_qmap_list[[rcp85_file]] <- list(rcp85[si:ei])
+		rcp85_nqmap[[rcp85_file]] <- list(tas[si:ei])
+		rcp85_dates[[rcp85_file]]<- list(greg_cal_rcp[si:ei])
 		
 		# do seasonal qmap
 		rcp85_summer = doQmap(tas[summer_index],pars_summer)
@@ -350,19 +322,17 @@ for (hist_file in hist_files){
 		rcp85_season[spring_index]<-rcp85_spring
 
 
-		rcp85_qmap_season_list[[var]] <- list(rcp85_season[si:ei])
+		rcp85_qmap_season_list[[rcp85_file]] <- list(rcp85_season[si:ei])
 		}
 
+		rcp85_dates = greg_cal_rcp[si:ei]
+		mydata=rcp85_qmap_list
+		modelNames = sapply(strsplit(names(mydata),'/'), "[", 7)
+		df=as.data.frame(mydata)
+		names(df)<-modelNames
+		df$Date<-greg_cal_rcp[si:ei]
+		save(df,file = paste0(outdir,"rcp85_",var))
 
-
-		if (stop){next}
-		modelName = unlist(strsplit(rcp85_file,'/'))[ 7]
-		df=as.data.frame(rcp85_qmap_season_list)
-		names(df)<-names(rcp85_qmap_season_list)
-		datetime<-greg_cal_rcp[si:ei]
-		df2=data.frame(datetime, round(df[1:7],1), round(df[8],4))
-		write.csv(df2,file = paste0(outdir,modelName, "_QMAP.txt"), row.names=FALSE)
-	}
 
 
 

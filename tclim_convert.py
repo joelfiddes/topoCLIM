@@ -4,11 +4,16 @@ import pandas as pd
 import numpy as np
 slope=0
 fsm_out=True
-indir="/home/joel/sim/qmap/topoclim/"
-outdir=indir+"/aqmap_results/"
-qfiles = glob.glob(outdir + "*QMAP.txt")
+indir="/home/joel/sim/qmap/topoclim/fsm/"
+outdir=indir+"/meteo/"
+qfiles = glob.glob(indir + "*QMAP.txt")
+
+if not os.path.exists(outdir):
+	os.makedirs(outdir)
+
 
 for qfile in qfiles:
+	print(qfile)
 	qdat= pd.read_csv(qfile, index_col=0, parse_dates=True)
 
 
@@ -58,7 +63,11 @@ for qfile in qfiles:
 
 
 	if fsm_out is True:
-		outname=qfile+"_FSM.txt"
+		outname1=qfile.split('/')[-1]  
+		outname=outname1.split('__TS.nc')[0]
+
+
+		
 		dates=qdat.index
 		df_fsm= pd.DataFrame({	
 		 				"year": dates.year, 
@@ -77,7 +86,7 @@ for qfile in qfiles:
 						
 						})
 
-		df_fsm.to_csv(path_or_buf=outname ,na_rep=-999,float_format='%.8f', header=False, sep='\t', index=False, 
+		df_fsm.to_csv(path_or_buf=outdir+outname+"_FSM.txt" ,na_rep=-999,float_format='%.8f', header=False, sep='\t', index=False, 
 			columns=['year','month','day', 'hour', 'ISWR', 'ILWR', 'Sf', 'Rf', 'TA', 'RH', 'VW', 'P'])
 
 
@@ -90,8 +99,10 @@ import os
 import sys
 
 namelist = sys.argv[1]
+namelist="/home/joel/sim/qmap/topoclim/fsm/nlst_qmap.txt"
 #os.system('./compil.sh')
 
+METEOFILES  = glob.glob(outdir + "*FSM.txt")
 
 
 try:
@@ -99,24 +110,29 @@ try:
 except:
     pass
 
-for n in range(32):
-    config = np.binary_repr(n, width=5)
-    print('Running FSM configuration ',config,n)
-    f = open('nlst.txt', 'w')
-    out_file = 'out.txt'
-    with open(namelist) as file:
-        for line in file:
-            f.write(line)
-            if 'config' in line:
-                f.write('  nconfig = '+str(n)+'\n')
-            if 'out_file' in line:
-                out_file = line.rsplit()[-1]
-            out_name = out_file.replace('.txt','')
-    f.close()
-    os.system('./FSM < nlst.txt')
-    save_file = 'output/'+out_name+'_'+config+'.txt'
-    os.system('mv '+out_file+' '+save_file)
-#os.system('rm nlst.txt')
+for METEOFILE in METEOFILES:
+	print(METEOFILE)
+	for n in range(32):
+	    config = np.binary_repr(n, width=5)
+	    print('Running FSM configuration ',config,n)
+	    f = open('nlst.txt', 'w')
+	    out_file = 'out.txt'
+	    with open(namelist) as file:
+	        for line in file:
+	            f.write(line)
+	            if 'config' in line:
+	                f.write('  nconfig = '+str(n)+'\n')
+	            if 'drive' in line:
+	            	METEOFILENAME=METEOFILE.split(indir+'/meteo/')[1]
+	                f.write('  met_file = ' +"'./meteo/"+METEOFILENAME+"'"+'\n')
+	            if 'out_file' in line:
+	                out_file = line.rsplit()[-1]
+	            out_name = out_file.replace('.txt','')
+	    f.close()
+	    os.system('./FSM < nlst.txt')
+	    save_file = 'output/'+METEOFILENAME+ out_name+'_'+config+'.txt'
+	    os.system('mv '+out_file+' '+save_file)
+		#os.system('rm nlst.txt')
 
 
 #========================================================================
@@ -142,13 +158,11 @@ def plot(obs):
     plt.legend()
     plt.show()
 
-ncfiles = glob.glob(outdir+ "*FSM.txt")
+ncfiles = glob.glob("/home/joel/sim/qmap/topoclim/fsm/output/"+ "*.txt")
 for nc in ncfiles:
 
 	df_obs= pd.read_csv(nc, index_col=(0,1,2), delim_whitespace=True)
 	plot(df_obs.iloc[:,3])
-
-
 
 
 #HS
