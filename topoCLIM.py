@@ -1,4 +1,38 @@
 
+"""
+python3
+
+This module takes post processed daily CORDEX downloads from esgf_post.py and 
+produces point timeseries of dissagreated hourly files with standard calenders
+
+Example:
+        $ python topoCLIM.py
+
+Vars:
+	all parameters set in script currently
+
+Details:
+
+	1. select nearest gid cel tp POI
+	2. check for full suit of variables
+	3. convert calenders
+	4, dissagregate daily to hourly
+
+	- converyts all types of no standard (no leap 360 day) cal to standard cal 
+		adapted methods from xclim package
+	- daily to hourly dissagregation, adapted methods from melodist.py for 
+	dissagregation:
+
+Förster, K., Hanzer, F., Winter, B., Marke, T., and Strasser, U.: An open-source 
+MEteoroLOgical observation time series DISaggregation Tool 
+(MELODIST v0.1.1), Geosci. Model Dev., 9, 2315-2333, doi:10.5194/gmd-9-2315-2016
+, 2016.
+
+https://github.com/kristianfoerster/melodist
+
+"""
+
+
 import matplotlib.pyplot as plt
 import melodist
 import scipy.stats
@@ -15,6 +49,7 @@ import calendar3 as cal3
 # MODULE: Subdaily dissagregaration
 #
 #===============================================================================
+
 
 
 
@@ -40,6 +75,29 @@ calibration_period = slice('2000-01-01', '2015-12-31')
 validation_period = slice('2016-01-01', '2016-12-31')
 plot_period = slice('2016-09-03', '2030-10-13')
 
+
+#===============================================================================
+# model downloads accounting
+#===============================================================================
+nchistfiles = glob.glob('/home/joel/sim/qmap/test/pyout/'+ "*historical*")
+ncrcp26files = glob.glob('/home/joel/sim/qmap/test/pyout/'+ "*rcp26*")
+ncrcp85files = glob.glob('/home/joel/sim/qmap/test/pyout/'+ "*rcp85*")
+# file names
+
+ncfiles_vec= nchistfiles,ncrcp26files, ncrcp85files
+
+for ncfiles in ncfiles_vec:
+	allfiles = [i.split('pyout/', 1)[1] for i in ncfiles] # c. 9000 models, pars, times
+	rootfiles = [i.split('day', 1)[0] for i in allfiles]
+	modelPars = list(set(rootfiles)) # c.5000 models, par
+
+	models2 = list(set([i.split('_', 1)[1] for i in rootfiles]))  # c. 60 models
+	print(len(models2))
+	#26                                                                                                                                                                                                                                                                                                               
+	#10
+	#25
+	#total = 61 models downloaded
+	# 44 now available complete eg len(nc_complete) not all models have all parameters
 #===============================================================================
 # Observations (toposacle output)
 # Units:
@@ -94,7 +152,7 @@ of each variable (e.g., average for temperature, sum for precipitation)"""
 data_obs_daily = melodist.util.daily_from_hourly(data_obs_hourly) # 
 
 #======================================================================================
-# Methods
+# Methods from melodist
 #======================================================================================
 def plot(obs, sim):
 	plt.figure()
@@ -149,7 +207,9 @@ def print_stats(obs, sim):
 
 # check for complete nc files
 
-ncfiles = glob.glob('/home/joel/sim/qmap/test/pyout/aresult/'+ "*_TS_ALL_ll.nc")
+ncfiles = glob.glob('/home/joel/sim/qmap/test/pyout/aresult/'+ '*_TS_ALL_ll.nc')
+
+
 nc_complete=[]
 for nc in ncfiles:
 
@@ -202,7 +262,7 @@ for nc in nc_complete:
 		ds1 = xr.open_dataset(nc_standard_hist, decode_times=True)
 	if  'rcp' in nc: 
 		ds1 = xr.open_dataset(nc_standard_clim,decode_times=True)
-		
+
 	ds = xr.open_dataset(nc,decode_times=True)
 
 	datetimeindex = ds.indexes["time"]

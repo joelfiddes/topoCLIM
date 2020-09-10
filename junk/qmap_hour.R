@@ -29,7 +29,7 @@ ENDDATE_CLIM="2099-12-31"
 
 # files
 indir="/home/joel/sim/qmap/topoclim"
-outdir=paste0(indir,"/fsm/")
+outdir=paste0(indir,"/fsm2/")
 files = list.files(path=indir, pattern="HOURLY.txt$", recursive=T, full.name=T)
 dir.create(outdir)
 hist_files = files[ grep('historical',files)]
@@ -64,12 +64,61 @@ myvars=c('TA', 'RH', 'VW', 'DW', 'P', 'ISWR', 'ILWR','PINT')#,  'pr', 'uas', 'va
 
 	# Cordex historical "1970-01-01 12" UTC" to 2005-12-30 12"======================
 
+# lists of parameters to be populate
+pars_ta<-list()
+pars_rh<-list()
+pars_vw<-list()
+pars_dw<-list()
+pars_p<-list()
+pars_iswr<-list()
+pars_ilwr<-list()
+pars_pint<-list()
+
+pars_summer_ta<-list()
+pars_summer_rh<-list()
+pars_summer_vw<-list()
+pars_summer_dw<-list()
+pars_summer_p<-list()
+pars_summer_iswr<-list()
+pars_summer_ilwr<-list()
+pars_summer_pint<-list()
+
+pars_autumn_ta<-list()
+pars_autumn_rh<-list()
+pars_autumn_vw<-list()
+pars_autumn_dw<-list()
+pars_autumn_P<-list()
+pars_autumn_iswr<-list()
+pars_autumn_ilwr<-list()
+pars_autumn_pint<-list()
+
+pars_winter_ta<-list()
+pars_winter_rh<-list()
+pars_winter_vw<-list()
+pars_winter_dw<-list()
+pars_winter_P<-list()
+pars_winter_iswr<-list()
+pars_winter_ilwr<-list()
+pars_winter_pint<-list()
+
+pars_spring_ta<-list()
+pars_spring_rh<-list()
+pars_spring_vw<-list()
+pars_spring_dw<-list()
+pars_spring_P<-list()
+pars_spring_iswr<-list()
+pars_spring_ilwr<-list()
+pars_spring_pint<-list()
+
 
 for (hist_file in hist_files){
 	stop = FALSE
 	print(hist_file)
-	modelName = unlist(strsplit(hist_file,'/'))[length(unlist(strsplit(hist_file,'/')))]
-	modelName2 = unlist(strsplit(modelName,'_historical'))[1]
+	modelNameBase = unlist(strsplit(hist_file,'/'))[length(unlist(strsplit(hist_file,'/')))]
+	GCM = unlist(strsplit(modelNameBase,'_historical'))[1]
+	RCM = unlist(strsplit(modelNameBase,'_'))[4]
+	modelChain=paste0(GCM,'_',RCM)
+
 	nc=read.csv(hist_file, sep=',', header=T, na.strings = "-999")
 
 	hist_qmap_list <- list()
@@ -172,6 +221,7 @@ for (hist_file in hist_files){
 		
 
 
+
 		# do seasonal qmap
 		month_cp = substring(greg_cal_hist,6,7)
 		summer_index=which( month_cp=="06"| month_cp=="07"| month_cp=="08")
@@ -198,7 +248,12 @@ for (hist_file in hist_files){
 
 
 		hist_qmap_season_list[[var]] <- list(hist_season[si:ei])
-		}
+		
+
+}
+
+
+
 
 		if (stop){next}
 		modelName = unlist(strsplit(hist_file,'/'))[ 7]
@@ -210,11 +265,8 @@ for (hist_file in hist_files){
 
 
 
-
-
-
-
 }
+
 	# Cordex rcp26 =======================================================================
 
 

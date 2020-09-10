@@ -434,19 +434,19 @@ for nc in nc_complete:
 
 
 
+import glob
+
 # perform dataset accounting
 ncfiles = glob.glob('/home/joel/sim/qmap/test/pyout/'+ "*.nc")
 
-# file names
 
-
-allfiles = [i.split('pyout/', 1)[1] for i in ncfiles]
+allfiles = [i.split('pyout/', 1)[1] for i in ncfiles] # c. 9000 models, pars, times
 rootfiles = [i.split('day', 1)[0] for i in allfiles]
-modelPars = list(set(rootfiles))
+modelPars = list(set(rootfiles)) # c.5000 models, par
 
 len(modelPars) 
 models1 = (([i.split('_', 1)[1] for i in modelPars]))
-models2 = list(set([i.split('_', 1)[1] for i in rootfiles]))
+models2 = list(set([i.split('_', 1)[1] for i in rootfiles]))  # c. 60 models
 len(models)
 
 counter=0
@@ -454,7 +454,7 @@ for mymodel in range(0, len(models2)):
 	
 	if len([i for i, e in enumerate(models1) if e == models2[mymodel]]) >= len(pars):
 		counter = counter+1
-		print counter
+		print (counter)
 
 
 
@@ -463,3 +463,19 @@ for mymodel in range(0, len(models2)):
 pars=['tas','tasmin' , 'tasmax','pr', 'hurs', 'rsds', 'rlds', 'ps']
 
 
+'rcp' in models
+
+nchistfiles = glob.glob('/home/joel/sim/qmap/test/pyout/'+ "*historical*")
+ncrcp26files = glob.glob('/home/joel/sim/qmap/test/pyout/'+ "*rcp26*")
+ncrcp85files = glob.glob('/home/joel/sim/qmap/test/pyout/'+ "*rcp85*")
+# file names
+
+ncfiles_vec= nchistfiles,ncrcp26files, ncrcp85files
+
+for ncfiles in ncfiles_vec:
+	allfiles = [i.split('pyout/', 1)[1] for i in ncfiles] # c. 9000 models, pars, times
+	rootfiles = [i.split('day', 1)[0] for i in allfiles]
+	modelPars = list(set(rootfiles)) # c.5000 models, par
+
+	models2 = list(set([i.split('_', 1)[1] for i in rootfiles]))  # c. 60 models
+	print(len(models2))
