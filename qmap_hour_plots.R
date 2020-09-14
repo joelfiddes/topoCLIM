@@ -14,7 +14,7 @@ require(wesanderson)
 # df_1h = df_obs.resample('1H').interpolate()
 # df_1hto_csv(path_or_buf='/home/joel/sim/qmap/wfj_long_1H.csv' ,na_rep=-999,float_format='%.8f', header=True, sep=',')
 		
-
+plot=FALSE
 # Setup ========================================================================
 
 # POI (WFJ) - to extract cordex gridbox
@@ -23,7 +23,7 @@ mylat = 46.83066
 
 
 # directories
-indir="/home/joel/sim/qmap/topoclim"
+indir="/home/joel/sim/qmap/topoclim_test"
 outdir=paste0(indir,"/aqmap_results/")
 dir.create(outdir)
 
@@ -62,13 +62,13 @@ for (var in myvars){
 print(var)
 
 	if(var=="TA"){obsindex <-11; convFact <-1; modindex <- 2} # K
-		if(var=="RH"){obsindex <-8; convFact <-100; modindex <- 3} # kgm-2s-1
-			if(var=="VW"){obsindex <-12; convFact <-1; modindex <- 4}# Pa
-				if(var=="DW"){obsindex <-2; convFact <-1; modindex <- 5} # % 0-100
-					if(var=="P"){obsindex <-5; convFact <-1; modindex <- 6}	# Wm-2
+		if(var=="RH"){obsindex <-8; convFact <-100; modindex <- 3} # 0-1 -> 0-100
+			if(var=="VW"){obsindex <-12; convFact <-1; modindex <- 4}# ms-1
+				if(var=="DW"){obsindex <-2; convFact <-1; modindex <- 5} # ms-1
+					if(var=="P"){obsindex <-5; convFact <-1; modindex <- 6}	# Pa
 						if(var=="ISWR"){obsindex <-4; convFact <-1; modindex <- 7}# Wm-2
-							if(var=="ILWR"){obsindex <-3; convFact <-1; modindex <- 8}# ms-1
-								if(var=="PINT"){obsindex <-6; convFact <-1; modindex <- 9}# ms-1
+							if(var=="ILWR"){obsindex <-3; convFact <-1; modindex <- 8}# Wm-2
+								if(var=="PINT"){obsindex <-6; convFact <-1; modindex <- 9}# mm/hr
 	# read and convert obs unit
 	obs_var=obs[,obsindex]*convFact	
 
@@ -101,11 +101,16 @@ print(var)
 		GCM = unlist(strsplit(modelNameBase,'_historical'))[1]
 		RCM = unlist(strsplit(modelNameBase,'_'))[4]
 		modelChain=paste0(GCM,'_',RCM)
-		modelChain_vec = c(modelChain_vec,modelChain) # available hist data
+		
 		
 		# get data
 		nc=read.csv(hist_file, sep=',', header=T, na.strings = "-999")
 		tas =nc[,modindex]
+
+		if(all(is.na(tas)==TRUE)){print(paste0("no data found in variable, skipping this file", hist_file));next}
+		
+		# if all present and correct can now add to chain
+		modelChain_vec = c(modelChain_vec,modelChain) # available hist data
 
 		# define periods
 		cordex_dates = strptime( nc[,1],format="%Y-%m-%d %H:%M:%S")
@@ -165,8 +170,8 @@ print(var)
 		hist_qmap_list[[modelChain]][['pars_spring']]<-pars_spring 
 		}
 
-		
-	mydata=hist_qmap_season_list
+		hist_qmap_list_NOPARS = lapply(hist_qmap_list, `[[`, 1)
+	mydata=hist_qmap_list_NOPARS
 	modelNames = names(mydata)
 	df=as.data.frame(mydata)
 	names(df)<-modelNames
@@ -194,6 +199,7 @@ print(var)
 		
 		# extract variable
 		tas =nc[,modindex]
+		if(all(is.na(tas)==TRUE)){print(paste0("no data found in variable, skipping this file", rcp26_file));next}
 
 		greg_cal_rcp = strptime( nc[,1],format="%Y-%m-%d %H:%M:%S")
 
@@ -231,7 +237,7 @@ print(var)
 		}
 		
 
-	mydata=rcp26_qmap_season_list
+	mydata=rcp26_qmap_list
 	modelNames = names(mydata)
 	df=as.data.frame(mydata)
 	names(df)<-modelNames
@@ -259,6 +265,7 @@ print(var)
 		nc=read.csv(rcp85_file, sep=',', header=T, na.strings = "-999")
 		
 		tas =nc[,modindex]
+		if(all(is.na(tas)==TRUE)){print(paste0("no data found in variable, skipping this file", rcp85_file));next}
 
 		greg_cal_rcp = strptime( nc[,1],format="%Y-%m-%d %H:%M:%S")
 
@@ -296,7 +303,7 @@ print(var)
 		}
 
 
-	mydata=rcp85_qmap_season_list
+	mydata=rcp85_qmap_list
 	modelNames = names(mydata)
 	df=as.data.frame(mydata)
 	names(df)<-modelNames
@@ -305,7 +312,7 @@ print(var)
 
 
 
-
+if(plot==TRUE){
 #===============================================================================
 # Plots
 #===============================================================================
@@ -550,7 +557,7 @@ legend("topright", c("OBS", "CLIM", "CLIM_QM", "CLIM_QMSEASON"), col=c(mycol[1],
 
 
 
-
+}
 
 }
 dev.off()
@@ -571,3 +578,131 @@ dev.off()
 						# "VW":station.data_disagg.wind,
 						# "P":station.data_disagg.P,
 
+outdir=paste0(indir,"/fsm/")
+results = list.files(path = "/home/joel/sim/qmap/topoclim_test/aqmap_results/",full.names=T )
+hist = results[grep("hist",results)]
+rcp26 = results[grep("rcp26",results)]
+rcp85 = results[grep("rcp85",results)]
+
+#DW
+
+typ='HIST'
+load(hist[1] )
+DW<-df
+load(hist[2] )
+ILWR<-df
+load(hist[3] )
+ISWR<-df
+load(hist[4] )
+P<-df
+load(hist[5] )
+PINT<-df
+load(hist[6] )
+RH<-df
+load(hist[7] )
+TA<-df
+load(hist[8] )
+VW<-df
+
+models = names(df)[1:length(names(df))-1]
+dates = df[length(df)]
+for (model in models){
+	print(model)
+	modellist=list()
+	modellist['datetime'] <- dates
+	modellist['DW']<- DW[model]
+	modellist['ILWR']<- ILWR[model]
+	modellist['ISWR']<- ISWR[model] # qmap can make non-zero night time rad which is unphysical
+	modellist['P']<- P[model]
+	modellist['PINT']<- PINT[model]
+	modellist['RH']<- RH[model]
+	modellist['TA']<- TA[model]
+	modellist['VW']<- VW[model]
+	df = as.data.frame(modellist)
+	df[c(2:5, 7:9)] =round(df[c(2:5, 7:9)],1)
+	df[6 ] = round(df[c(6)],4)
+	write.csv(df, paste0(outdir, model, "_",typ,"_QMAP.txt"), row.names=FALSE)
+	
+}
+
+
+typ='RCP26'
+load(rcp26[1] )
+DW<-df
+load(rcp26[2] )
+ILWR<-df
+load(rcp26[3] )
+ISWR<-df
+load(rcp26[4] )
+P<-df
+load(rcp26[5] )
+PINT<-df
+load(rcp26[6] )
+RH<-df
+load(rcp26[7] )
+TA<-df
+load(rcp26[8] )
+VW<-df
+
+models = names(df)[1:length(names(df))-1]
+dates = df[length(df)]
+for (model in models){
+	print(model)
+	modellist=list()
+	modellist['datetime'] <- dates
+	modellist['DW']<- DW[model]
+	modellist['ILWR']<- ILWR[model]
+	modellist['ISWR']<- ISWR[model]
+	modellist['P']<- P[model]
+	modellist['PINT']<- PINT[model]
+	modellist['RH']<- RH[model]
+	modellist['TA']<- TA[model]
+	modellist['VW']<- VW[model]
+	df = as.data.frame(modellist)
+	df[c(2:5, 7:9)] =round(df[c(2:5, 7:9)],1)
+	df[6 ] = round(df[c(6)],4)
+	write.csv(df, paste0(outdir, model, "_",typ,"_QMAP.txt"), row.names=FALSE)
+	
+}
+
+
+typ='RCP85'
+load(rcp85[1] )
+DW<-df
+load(rcp85[2] )
+ILWR<-df
+load(rcp85[3] )
+ISWR<-df
+load(rcp85[4] )
+P<-df
+load(rcp85[5] )
+PINT<-df
+load(rcp85[6] )
+RH<-df
+load(rcp85[7] )
+TA<-df
+load(rcp85[8] )
+VW<-df
+
+
+
+models = names(df)[1:length(names(df))-1]
+dates = df[length(df)]
+for (model in models){
+	print(model)
+	modellist=list()
+	modellist['datetime'] <- dates
+	modellist['DW']<- DW[model]
+	modellist['ILWR']<- ILWR[model]
+	modellist['ISWR']<- ISWR[model] 
+	modellist['P']<- P[model]
+	modellist['PINT']<- PINT[model]
+	modellist['RH']<- RH[model]
+	modellist['TA']<- TA[model]
+	modellist['VW']<- VW[model]
+	df = as.data.frame(modellist)
+	df[c(2:5, 7:9)] =round(df[c(2:5, 7:9)],1)
+	df[6 ] = round(df[c(6)],4)
+	write.csv(df, paste0(outdir, model, "_",typ,"_QMAP.txt"), row.names=FALSE)
+	
+}

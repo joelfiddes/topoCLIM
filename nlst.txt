@@ -3,7 +3,7 @@
   nconfig = 31
 /
 &drive
-  met_file ='/home/joel/sim/qmap/topoclim//aqmap_results/ICHEC-EC-EARTH_rcp26_r12i1p1_KNMI-RACMO22E_v1__TS.nc_TS_ALL_ll.nc_HOURLY.txt_QMAP.txt_FSM.txt'
+  met_file = './meteo/IPSL-IPSL-CM5A-MR_SMHI-RCA4_HIST_QMAP.txt_FSM.txt'
   zT = 1.5
   zvar = .FALSE.
 /

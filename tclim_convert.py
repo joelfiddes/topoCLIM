@@ -2,6 +2,7 @@
 import glob
 import pandas as pd
 import numpy as np
+import os
 slope=0
 fsm_out=True
 indir="/home/joel/sim/qmap/topoclim/fsm/"
@@ -67,7 +68,12 @@ for qfile in qfiles:
 		outname=outname1.split('__TS.nc')[0]
 
 
+		#Filter TA for absolute 0 vals
 		
+		qdat.TA[qdat.TA<220]=np.nan
+		qdat.TA = qdat.TA.ffill()
+		qdat.P[qdat.P<10000]=np.nan
+		qdat.P = qdat.P.ffill()
 		dates=qdat.index
 		df_fsm= pd.DataFrame({	
 		 				"year": dates.year, 
@@ -91,18 +97,19 @@ for qfile in qfiles:
 
 
 #========================================================================
-# Sim
+# Sim - make sure cd into dir
 #========================================================================
 
 import numpy as np
 import os
 import sys
 
-namelist = sys.argv[1]
+
 namelist="/home/joel/sim/qmap/topoclim/fsm/nlst_qmap.txt"
 #os.system('./compil.sh')
 
 METEOFILES  = glob.glob(outdir + "*FSM.txt")
+
 
 
 try:
@@ -112,34 +119,33 @@ except:
 
 for METEOFILE in METEOFILES:
 	print(METEOFILE)
-	for n in range(32):
-	    config = np.binary_repr(n, width=5)
-	    print('Running FSM configuration ',config,n)
-	    f = open('nlst.txt', 'w')
-	    out_file = 'out.txt'
-	    with open(namelist) as file:
-	        for line in file:
-	            f.write(line)
-	            if 'config' in line:
-	                f.write('  nconfig = '+str(n)+'\n')
-	            if 'drive' in line:
-	            	METEOFILENAME=METEOFILE.split(indir+'/meteo/')[1]
-	                f.write('  met_file = ' +"'./meteo/"+METEOFILENAME+"'"+'\n')
-	            if 'out_file' in line:
-	                out_file = line.rsplit()[-1]
-	            out_name = out_file.replace('.txt','')
-	    f.close()
-	    os.system('./FSM < nlst.txt')
-	    save_file = 'output/'+METEOFILENAME+ out_name+'_'+config+'.txt'
-	    os.system('mv '+out_file+' '+save_file)
+	#for n in 31: #range(32):
+	n=31
+    config = np.binary_repr(n, width=5)
+    print('Running FSM configuration ',config,n)
+    f = open('nlst.txt', 'w')
+    out_file = 'out.txt'
+    with open(namelist) as file:
+        for line in file:
+            f.write(line)
+            if 'config' in line:
+                f.write('  nconfig = '+str(n)+'\n')
+            if 'drive' in line:
+            	METEOFILENAME=METEOFILE.split(indir+'/meteo/')[1]
+                f.write('  met_file = ' +"'./meteo/"+METEOFILENAME+"'"+'\n')
+            if 'out_file' in line:
+                out_file = line.rsplit()[-1]
+            out_name = out_file.replace('.txt','')
+    f.close()
+    os.system('./FSM < nlst.txt')
+    save_file = 'output/'+METEOFILENAME+ out_name+'_'+config+'.txt'
+    os.system('mv '+out_file+' '+save_file)
 		#os.system('rm nlst.txt')
 
 
 #========================================================================
-# Plot
+# Plot models
 #========================================================================
-
-
 
 
 import matplotlib.pyplot as plt
@@ -148,7 +154,8 @@ import pandas as pd
 import glob
 import matplotlib
 
-
+var=2 # HS
+#var=3 # swe
 
 # swe
 def plot(obs):
@@ -158,11 +165,228 @@ def plot(obs):
     plt.legend()
     plt.show()
 
-ncfiles = glob.glob("/home/joel/sim/qmap/topoclim/fsm/output/"+ "*.txt")
+
+
+stats_hist=pd.DataFrame()
+stats_rcp=pd.DataFrame()
+
+ncfiles = glob.glob("/home/joel/sim/qmap/topoclim/fsm/output/"+ "*HIST*")
+swe_hist=pd.DataFrame()
+
+for nc in ncfiles:
+	name1 = nc.split('/')[-1]
+	name = name1.split('.')[0]
+	df_obs= pd.read_csv(nc, delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
+	df_obs.set_index(df_obs.iloc[:,0], inplace=True)  
+	df_obs.drop(df_obs.columns[[0]], axis=1, inplace=True )      
+	swe_hist[name]=df_obs.iloc[:,var]
+	
+#plot(swe_hist.mean(axis=1 )) 
+stats_hist['histmean'] =swe_hist.mean(axis=1 )
+stats_hist['histstd'] =swe_hist.std(axis=1 )
+
+ncfiles = glob.glob("/home/joel/sim/qmap/topoclim/fsm/output/"+ "*RCP26*")
+swe_rcp26=pd.DataFrame()
+for nc in ncfiles:
+	name1 = nc.split('/')[-1]
+	name = name1.split('.')[0]
+	df_obs= pd.read_csv(nc, delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
+	df_obs.set_index(df_obs.iloc[:,0], inplace=True)  
+	df_obs.drop(df_obs.columns[[0]], axis=1, inplace=True )  
+	swe_rcp26[name]=df_obs.iloc[:,var]
+
+#plot(swe_rcp26.mean(axis=1 )) 
+stats_rcp['rcp26mean'] =swe_rcp26.mean(axis=1 )
+stats_rcp['rcp26std'] =swe_rcp26.std(axis=1 )
+
+ncfiles = glob.glob("/home/joel/sim/qmap/topoclim/fsm/output/"+ "*RCP85*")
+swe_rcp85=pd.DataFrame()
+for nc in ncfiles:
+	name1 = nc.split('/')[-1]
+	name = name1.split('.')[0]
+	df_obs= pd.read_csv(nc, delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
+	df_obs.set_index(df_obs.iloc[:,0], inplace=True)  
+	df_obs.drop(df_obs.columns[[0]], axis=1, inplace=True )  
+	swe_rcp85[name]=df_obs.iloc[:,var]
+
+#plot(swe_rcp85.mean(axis=1 )) 
+stats_rcp['rcp85mean'] =swe_rcp85.mean(axis=1 )
+stats_rcp['rcp85std'] =swe_rcp85.std(axis=1 )
+
+
+
+
+hist_mean_year = stats_hist.histmean.resample('A').mean()
+rcp26_mean_year = stats_rcp.rcp26mean.resample('A').mean()
+rcp85_mean_year = stats_rcp.rcp85mean.resample('A').mean()
+
+hist_std_year = stats_hist.histstd.resample('A').mean()
+rcp26_std_year = stats_rcp.rcp26std.resample('A').mean()
+rcp85_std_year = stats_rcp.rcp85std.resample('A').mean()
+
+
+
+#========================================================================
+# Sim ERA5 obs
+#========================================================================
+
+obsfile = "/home/joel/sim/qmap/wfj_long_1H.csv"
+odat= pd.read_csv(obsfile, index_col=0, parse_dates=True)
+
+dates=odat.index
+df_fsm= pd.DataFrame({	
+		 				"year": dates.year, 
+		 				"month": dates.month, 
+						"day": dates.day, 
+						"hour": dates.hour,
+						"ISWR":odat.ISWR, 
+						"ILWR":odat.ILWR, 
+						"Sf":odat.Sf/(60.*60.), # prate in mm/hr to kgm2/s
+						"Rf":odat.Rf/(60.*60.), # prate in mm/hr to kgm2/s
+						"TA":odat.TA, 
+						"RH":odat.RH*100,#*0.01, #meteoio 0-1
+						"VW":odat.VW,
+						"P":odat.P,
+						
+						
+						})
+
+df_fsm.to_csv(path_or_buf=outdir+"/OBS_FSM.txt" ,na_rep=-999,float_format='%.8f', header=False, sep='\t', index=False, 
+			columns=['year','month','day', 'hour', 'ISWR', 'ILWR', 'Sf', 'Rf', 'TA', 'RH', 'VW', 'P'])
+
+
+
+
+import numpy as np
+import os
+import sys
+
+
+namelist="/home/joel/sim/qmap/topoclim_test/fsm/nlst_qmap.txt"
+#os.system('./compil.sh')
+
+METEOFILES  = glob.glob(outdir + "OBS_FSM.txt")
+
+
+
+try:
+    os.mkdir('output')
+except:
+    pass
+
+for METEOFILE in METEOFILES:
+	print(METEOFILE)
+	#for n in 31: #range(32):
+	n=31
+    config = np.binary_repr(n, width=5)
+    print('Running FSM configuration ',config,n)
+    f = open('nlst.txt', 'w')
+    out_file = 'out.txt'
+    with open(namelist) as file:
+        for line in file:
+            f.write(line)
+            if 'config' in line:
+                f.write('  nconfig = '+str(n)+'\n')
+            if 'drive' in line:
+            	METEOFILENAME=METEOFILE.split(indir+'/meteo/')[1]
+                f.write('  met_file = ' +"'./meteo/"+METEOFILENAME+"'"+'\n')
+            if 'out_file' in line:
+                out_file = line.rsplit()[-1]
+            out_name = out_file.replace('.txt','')
+    f.close()
+    os.system('./FSM < nlst.txt')
+    save_file = 'output/'+METEOFILENAME+ out_name+'_'+config+'.txt'
+    os.system('mv '+out_file+' '+save_file)
+		#os.system('rm nlst.txt')
+
+#plot gcos obs - no good as cant get mean annual values
+gcos_dat="//home/joel/sim/qmap/wfj_GCOS.csv"
+gcosdat= pd.read_csv(gcos_dat, index_col=1, parse_dates=True)
+
+
+
+# get header line from smet
+import re
+pattern = "fields"
+
+file = open("/home/joel/data/wfj_optimal/WFJ_optimaldataset_v8.smet", "r")
+for line in file:
+    if re.search(pattern, line):
+        hdr = line
+
+# silly smet hdr parsing
+myhdr = hdr.split('=')[1] 
+hdrout= myhdr[1:-1]
+
+
+
+# read file
+wfj_optim= pd.read_csv("/home/joel/data/wfj_optimal/WFJ_optimaldataset_v8.smet", index_col=0, parse_dates=True, skiprows=21, sep=r'\s{2,}' ,header=None, na_values=-999)
+wfj_optim.columns= hdrout.split(' ')[1:]   
+
+# aggregate to year
+optim_year = wfj_optim.resample('A').mean()    
+
+# swe
+def plot(obs):
+    plt.figure()
+    ax = plt.gca()
+    obs.plot()
+    plt.legend()
+    plt.show()
+
+ncfiles = glob.glob("/home/joel/sim/qmap/topoclim_test/fsm/output/"+ "*OBS*")
 for nc in ncfiles:
 
-	df_obs= pd.read_csv(nc, index_col=(0,1,2), delim_whitespace=True)
-	plot(df_obs.iloc[:,3])
+	df_obs= pd.read_csv(nc, delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
+	df_obs.set_index(df_obs.iloc[:,0], inplace=True)  
+	df_obs.drop(df_obs.columns[[0]], axis=1, inplace=True )      
+	era5=df_obs.iloc[:,var]
+
+# annual values
+era5_year = era5.resample('A').mean()
+era5_year.name='era5'
+
+
+# obs val
+
+#========================================================================
+# Plot
+#========================================================================
+plt.figure()
+ax = plt.gca()
+
+#era5_year.plot(color='grey') something wri=ong with this as biased where qmapped datra that depends on this is good!
+
+optim_year['HS'][optim_year['HS']<0] = np.nan
+wfj_HS = optim_year['HS'][0:-1] # drop incomplete 2019
+wfj_HS.plot(color='red')
+
+plt.fill_between(hist_mean_year.index, hist_mean_year-hist_std_year , hist_mean_year+hist_std_year , alpha=0.2)
+hist_mean_year.plot()
+
+plt.fill_between(rcp85_mean_year.index, rcp85_mean_year-rcp85_std_year, rcp85_mean_year+rcp85_std_year, alpha=0.2)
+rcp85_mean_year.plot()
+
+plt.fill_between(rcp26_mean_year.index, rcp26_mean_year-rcp26_std_year, rcp26_mean_year+rcp26_std_year, alpha=0.2)
+rcp26_mean_year.plot()
+wfj_HS.plot(color='red')
+plt.axhline(hist_mean_year.mean(), color='grey')
+ax.set_xlabel('year')
+ax.set_ylabel('mean annual snow height (m)')
+
+plt.legend()
+plt.show()
+
+
+
+
+
+
+
+
+
+
 
 
 #HS
@@ -173,7 +397,7 @@ def plot(obs):
     plt.legend()
     plt.show()
 
-ncfiles = glob.glob('/home/joel/sim/qmap/fsm/output1/'+ "*.txt")
+ncfiles = glob.glob('/home/joel/sim/qmap/topoclim/fsm/output/'+ "*.txt")
 for nc in ncfiles:
 
 	df_obs= pd.read_csv(nc, index_col=(0,1,2), delim_whitespace=True)
@@ -192,3 +416,6 @@ for nc in ncfiles:
 
 	df_obs= pd.read_csv(nc, index_col=(0,1,2), delim_whitespace=True)
 	plot(df_obs.iloc[:,4])
+
+
+

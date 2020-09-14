@@ -252,7 +252,7 @@ for nc in ncfiles:
 
 
 
-for nc in nc_complete:
+for nc in nc_complete[41:44]:
 	print(nc)
 	#nc=nc_complete[9] no leapS
 	#nc=nc_complete[10] # 360 day
@@ -370,10 +370,21 @@ for nc in nc_complete:
 
 	# set index
 	df3 =df2.set_index(datetimeindex) 
-
-
-
 	df4 = df3.resample('D').mean()
+	
+	# filter tmin /tmax error in #'/home/joel/sim/qmap/test/pyout/aresult/MOHC-HadGEM2-ES_historical_r1i1p1_CLMcom-CCLM5-0-6_v1__TS.nc_TS_ALL_ll.nc'
+	# vals of 500 / 20
+	df4.tmin = df4.tmin[df4.tmin>330]=np.nan
+	df4.tmax = df4.tmax[df4.tmax<220]=np.nan
+
+	# for case of 360 calender that ends on dec 26 (rare) for example:
+	#'/home/joel/sim/qmap/test/pyout/aresult/MOHC-HadGEM2-ES_historical_r1i1p1_CLMcom-CCLM5-0-6_v1__TS.nc_TS_ALL_ll.nc'
+	# we run ffill() for last 5 days
+	# has no effect if contains data
+	
+	df4=df4.ffill()
+
+
 	station = melodist.Station(lon=longitude, lat=latitude, timezone=timezone, data_daily=df4)
 
 
