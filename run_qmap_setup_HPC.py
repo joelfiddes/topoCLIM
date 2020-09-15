@@ -11,17 +11,15 @@ num_cores = int(sys.argv[1]) # Must input number of cores
 #===============================================================================
 # hardcoded stuff
 #===============================================================================
-raw_dir= '/home/joel/sim/qmap/raw_cordex/'
 wd = "/home/joel/sim/qmap"
+raw_dir= wd+'/raw_cordex/'
 indir = wd + "/topoclim_test/"
 if not os.path.exists(indir):
 	os.makedirs(indir)
-	
+
 # standard calender examples (can be any file with standard cal) to interp non-standard cals to in hist and clim period
 nc_standard_clim=raw_dir+'/aresult/ICHEC-EC-EARTH_rcp85_r12i1p1_CLMcom-CCLM5-0-6_v1__TS.nc_TS_ALL_ll.nc'
 nc_standard_hist=raw_dir+'/aresult/ICHEC-EC-EARTH_historical_r1i1p1_KNMI-RACMO22E_v1__TS.nc_TS_ALL_ll.nc'
-
-
 
 # time periods
 cal_period = slice('2000-01-01', '2015-12-31')
