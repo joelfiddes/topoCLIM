@@ -3,7 +3,7 @@ import os
 import xarray as xr
 import pandas as pd
 
-outdir="/home/joel/sim/qmap/test/pyout/"
+outdir="/home/joel/sim/qmap/raw_cordex/"
 domain='EUR-44'
 time_frequency='day' #3hr' #
 ts_dir=outdir+"aresult/"

@@ -5,30 +5,31 @@ require(pracma)
 require(hydroGOF)
 require(wesanderson)
 
-# create 1h wfj era5 obs data by
-# import pandas as pd
-# path_inp = "/home/joel/sim/qmap/wfj_long.csv"
-# # lesson of psum mess is dont use psum!!
-# df_obs= pd.read_csv(path_inp, index_col=0, parse_dates=True)
-# df.resample('1H').interpolate()
-# df_1h = df_obs.resample('1H').interpolate()
-# df_1hto_csv(path_or_buf='/home/joel/sim/qmap/wfj_long_1H.csv' ,na_rep=-999,float_format='%.8f', header=True, sep=',')
+# Args:
+	
+
+	# indir="/home/joel/sim/qmap/topoclim_test" 
+
+args = commandArgs(trailingOnly=TRUE)
+root = args[1]
+sample = args[2]
+path_inpt = args[3]
+
+
+# linearly resample 3h era5 to 1h and cpture path as variable
+#path_inpt = system2(command = "python", args = paste( "resample_timeseries.py" , path_inp), stdout=TRUE)
+
 		
 plot=FALSE
 # Setup ========================================================================
+indir=paste0(root, '/s',sample)
+dir.create(indir)
 
-# POI (WFJ) - to extract cordex gridbox
-mylon = 9.80490
-mylat = 46.83066
-
-
-# directories
-indir="/home/joel/sim/qmap/topoclim_test"
 outdir=paste0(indir,"/aqmap_results/")
 dir.create(outdir)
 
 # dissaggregated calender corrected hourly input files (produced by topoCLIM.py)
-files = list.files(path=indir, pattern="HOURLY.txt$", recursive=T, full.name=T)
+files = list.files(path=root, pattern="HOURLY.txt$", recursive=T, full.name=T)
 hist_files = files[ grep('historical',files)]
 rcp26_files = files[ grep('rcp26',files)]
 rcp85_files = files[ grep('rcp85',files)]
@@ -54,8 +55,8 @@ pdf(paste(outdir,"evalplot_singleModel_season.pdf"),height=20, width=10)
 par(mfrow=c(8,2))
 
 # Obs Era5 data downscaled by toposcale, can be resampled
-obsfile = "/home/joel/sim/qmap/wfj_long_1H.csv"#
-obs=read.csv(obsfile)
+
+obs=read.csv(path_inpt)
 myvars=c('TA', 'RH', 'VW', 'DW', 'P', 'ISWR', 'ILWR','PINT')
 
 for (var in myvars){
@@ -578,8 +579,9 @@ dev.off()
 						# "VW":station.data_disagg.wind,
 						# "P":station.data_disagg.P,
 
-outdir=paste0(indir,"/fsm/")
-results = list.files(path = "/home/joel/sim/qmap/topoclim_test/aqmap_results/",full.names=T )
+fsmdir=paste0(indir,"/fsm/")
+dir.create(fsmdir)
+results = list.files(path = paste0(indir,"/aqmap_results/"),full.names=T )
 hist = results[grep("hist",results)]
 rcp26 = results[grep("rcp26",results)]
 rcp85 = results[grep("rcp85",results)]
@@ -621,7 +623,7 @@ for (model in models){
 	df = as.data.frame(modellist)
 	df[c(2:5, 7:9)] =round(df[c(2:5, 7:9)],1)
 	df[6 ] = round(df[c(6)],4)
-	write.csv(df, paste0(outdir, model, "_",typ,"_QMAP.txt"), row.names=FALSE)
+	write.csv(df, paste0(fsmdir, model, "_",typ,"_QMAP.txt"), row.names=FALSE)
 	
 }
 
@@ -661,7 +663,7 @@ for (model in models){
 	df = as.data.frame(modellist)
 	df[c(2:5, 7:9)] =round(df[c(2:5, 7:9)],1)
 	df[6 ] = round(df[c(6)],4)
-	write.csv(df, paste0(outdir, model, "_",typ,"_QMAP.txt"), row.names=FALSE)
+	write.csv(df, paste0(fsmdir, model, "_",typ,"_QMAP.txt"), row.names=FALSE)
 	
 }
 
@@ -703,6 +705,6 @@ for (model in models){
 	df = as.data.frame(modellist)
 	df[c(2:5, 7:9)] =round(df[c(2:5, 7:9)],1)
 	df[6 ] = round(df[c(6)],4)
-	write.csv(df, paste0(outdir, model, "_",typ,"_QMAP.txt"), row.names=FALSE)
+	write.csv(df, paste0(fsmdir, model, "_",typ,"_QMAP.txt"), row.names=FALSE)
 	
 }

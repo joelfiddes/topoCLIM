@@ -9,7 +9,7 @@ import xarray as xr
 project='CORDEX'
 domain='EUR-44'
 time_frequency='day' #3hr
-outdir="/home/joel/sim/qmap/test/pyout/"
+outdir="/home/joel/sim/qmap/raw_cordex/"
 
 print('Downloading' + time_frequency + ' data')
 if not os.path.exists(outdir):
