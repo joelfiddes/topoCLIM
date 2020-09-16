@@ -72,8 +72,8 @@ tscale_files = glob.glob(tscale_sim_dir+"/forcing/"+ "meteoc*")
 path_inpt = tscale_files[0] # just take first one for dissagregation as they are all scaled versions of one another - the signal should be fine but need to test. Incentive is to run this only once per grid = large efficiency gains
 path_inpt_1H = resamp.main(path_inpt)
 
-logging.info("run topoCLIm")
-tclim.main(raw_dir, mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_period, val_period, plot_period, path_inpt_1H, root)
+logging.info("run topoclim")
+#tclim.main(raw_dir, mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_period, val_period, plot_period, path_inpt_1H, root)
 
 
 
@@ -83,7 +83,7 @@ print("running jobs: "+str(tscale_files_sort))
 
 njobs=len(tscale_files_sort)
 
-logging.info("starting" +njobs+ "jobs")
+logging.info("starting " +str(njobs)+ " jobs")
 Parallel(n_jobs=int(num_cores))(delayed(run_qmap_HPC.main)(root, tscale_file  ) for tscale_file in tscale_files_sort)
 
 print("All cluster jobs complete!")

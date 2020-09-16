@@ -1,13 +1,14 @@
 
 import subprocess
 import os
-
+import logging
+import resample_timeseries as resamp
 # asuume run:
 # esgf_get.py
 # esgf_post.py
 
 
-def main(root, path_inpt_1H):
+def main(root, path_inpt):
 
 	# wd = "/home/joel/sim/qmap"
 	# raw_dir= wd+'/raw_cordex/'
@@ -36,7 +37,7 @@ def main(root, path_inpt_1H):
 
 	# print(sample)
 	# # # linearly resample 3h era5 to 1h and cpture path as variable
-	# path_inpt_1H = resamp.main(path_inpt)
+	path_inpt_1H = resamp.main(path_inpt)
 
 	# # just take first one for dissagregation as they are all scaled versions of one another - the signal should be fine but need to test. Incentive is to run this only once per grid = large efficiency gains
 	# tclim.main(raw_dir, mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_period, val_period, plot_period, path_inpt_1H, root)
