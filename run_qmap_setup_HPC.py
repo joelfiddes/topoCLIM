@@ -4,7 +4,9 @@ sys.path.append(os.getcwd())
 import run_qmap_HPC
 import pandas as pd
 import glob
-
+import logging
+import resample_timeseries as resamp
+import topoCLIM as tclim
 from joblib import Parallel, delayed
 
 num_cores = int(sys.argv[1]) # Must input number of cores
@@ -13,14 +15,26 @@ num_cores = int(sys.argv[1]) # Must input number of cores
 # https://stackoverflow.com/questions/39241032/how-to-import-a-local-python-module-when-using-the-sbatch-command-in-slurm
 
 
+wd = "/home/joel/sim/qmap"
+tscale_sim_dir = wd+ "/GR_data/sim/g3/"
+indir = wd+"/topoclim_test_hpc/"
+
 #===============================================================================
 # hardcoded stuff
 #===============================================================================
-wd = "/home/joel/sim/qmap"
 raw_dir= wd+'/raw_cordex/'
-indir = wd + "/topoclim_test_hpc/"
+
+
 if not os.path.exists(indir):
 	os.makedirs(indir)
+
+# to clear logger: https://stackoverflow.com/questions/30861524/logging-basicconfig-not-creating-log-file-when-i-run-in-pycharm
+for handler in logging.root.handlers[:]:
+	logging.root.removeHandler(handler)
+
+logging.basicConfig(level=logging.DEBUG, filename=indir+"/logfile",filemode="a+",format="%(asctime)-15s %(levelname)-8s %(message)s")
+
+
 
 # standard calender examples (can be any file with standard cal) to interp non-standard cals to in hist and clim period
 nc_standard_clim=raw_dir+'/aresult/ICHEC-EC-EARTH_rcp85_r12i1p1_CLMcom-CCLM5-0-6_v1__TS.nc_TS_ALL_ll.nc'
@@ -32,7 +46,7 @@ val_period = slice('2016-01-01', '2016-12-31')
 plot_period = slice('2016-09-03', '2030-10-13')
 
 # tscale_sim dir
-tscale_sim_dir = "/home/joel/sim/qmap/GR_data/sim/g3/"
+
 grid = tscale_sim_dir.split('/')[-2]
 grid='g3'
 #===============================================================================
@@ -53,18 +67,21 @@ tscale_files = glob.glob(tscale_sim_dir+"/forcing/"+ "meteoc*")
 
 # run topoClim precprocessing to generate files corresponding to grid centre
 
-#path_inp = tscale_files[0] # just take first one for dissagregation as they are all scaled versions of one another - the signal should be fine but need to test. Incentive is to run this only once per grid = large efficiency gains
-#tclim.main(raw_dir, mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_period, val_period, plot_period, path_inp, root)
+path_inpt = tscale_files[0] # just take first one for dissagregation as they are all scaled versions of one another - the signal should be fine but need to test. Incentive is to run this only once per grid = large efficiency gains
+path_inpt_1H = resamp.main(path_inpt)
+
+logging.info("run topoCLIm")
+tclim.main(raw_dir, mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_period, val_period, plot_period, path_inpt_1H, root)
 
 
 
 # all jobs
-simdirs = sorted(tscale_files)
-print("running jobs: "+str(simdirs))
+tscale_files_sort = sorted(tscale_files)
+print("running jobs: "+str(tscale_files_sort))
 
-njobs=len(simdirs)
+njobs=len(tscale_files_sort)
 
-
-Parallel(n_jobs=int(num_cores))(delayed(run_qmap_HPC.main)(root, i+1, tscale_files[i]  ) for i in range(0,njobs))
+logging.info("starting" +njobs+ "jobs")
+Parallel(n_jobs=int(num_cores))(delayed(run_qmap_HPC.main)(root, tscale_file  ) for tscale_file in tscale_files_sort)
 
 print("All cluster jobs complete!")
