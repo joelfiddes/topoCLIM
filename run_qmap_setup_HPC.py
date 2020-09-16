@@ -1,19 +1,24 @@
-import run_qmap_par
-import pandas as pd
-import os
-import glob
-import topoCLIM as tclim
 import sys
+import os
+sys.path.append(os.getcwd()) 
+import run_qmap_HPC
+import pandas as pd
+import glob
+
 from joblib import Parallel, delayed
 
 num_cores = int(sys.argv[1]) # Must input number of cores
+
+# make sure pacjaes are found
+# https://stackoverflow.com/questions/39241032/how-to-import-a-local-python-module-when-using-the-sbatch-command-in-slurm
+
 
 #===============================================================================
 # hardcoded stuff
 #===============================================================================
 wd = "/home/joel/sim/qmap"
 raw_dir= wd+'/raw_cordex/'
-indir = wd + "/topoclim_test/"
+indir = wd + "/topoclim_test_hpc/"
 if not os.path.exists(indir):
 	os.makedirs(indir)
 
@@ -27,7 +32,7 @@ val_period = slice('2016-01-01', '2016-12-31')
 plot_period = slice('2016-09-03', '2030-10-13')
 
 # tscale_sim dir
-tscale_sim_dir = "/home/joel/sim/qmap/GR_data/sim/g3_id/"
+tscale_sim_dir = "/home/joel/sim/qmap/GR_data/sim/g3/"
 grid = tscale_sim_dir.split('/')[-2]
 grid='g3'
 #===============================================================================
@@ -48,8 +53,8 @@ tscale_files = glob.glob(tscale_sim_dir+"/forcing/"+ "meteoc*")
 
 # run topoClim precprocessing to generate files corresponding to grid centre
 
-path_inp = tscale_files[0] # just take first one for dissagregation as they are all scaled versions of one another - the signal should be fine but need to test. Incentive is to run this only once per grid = large efficiency gains
-tclim.main(raw_dir, mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_period, val_period, plot_period, path_inp, root)
+#path_inp = tscale_files[0] # just take first one for dissagregation as they are all scaled versions of one another - the signal should be fine but need to test. Incentive is to run this only once per grid = large efficiency gains
+#tclim.main(raw_dir, mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_period, val_period, plot_period, path_inp, root)
 
 
 
@@ -60,6 +65,6 @@ print("running jobs: "+str(simdirs))
 njobs=len(simdirs)
 
 
-Parallel(n_jobs=int(num_cores))(delayed(run_qmap_par.main)(root, i+1, tscale_files[i]  ) for i in range(0,njobs))
+Parallel(n_jobs=int(num_cores))(delayed(run_qmap_HPC.main)(root, i+1, tscale_files[i]  ) for i in range(0,njobs))
 
 print("All cluster jobs complete!")

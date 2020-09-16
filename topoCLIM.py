@@ -46,7 +46,7 @@ import xarray as xr
 import calendar3 as cal3
 
 
-def main(raw_dir, mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_period, val_period, plot_period, path_inp, outdir):# create 1h wfj era5 obs data by
+def main(raw_dir, mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_period, val_period, plot_period, path_inpt, outdir):# create 1h wfj era5 obs data by
 
 	#===============================================================================
 	# 
@@ -79,7 +79,7 @@ def main(raw_dir, mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_peri
 	# validation_period = slice('2016-01-01', '2016-12-31')
 	# plot_period = slice('2016-09-03', '2030-10-13')
 
-	# path_inp = "/home/joel/sim/qmap/wfj_long.csv"
+	# path_inpt = "/home/joel/sim/qmap/wfj_long.csv"
 
 
 
@@ -93,7 +93,7 @@ def main(raw_dir, mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_peri
 	validation_period = val_period
 	plot_period = plot_period
 
-	path_inp = path_inp
+	path_inpt = path_inpt
 	#===============================================================================
 	# model downloads accounting
 	#===============================================================================
@@ -135,7 +135,7 @@ def main(raw_dir, mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_peri
 
 	# lesson of psum mess is dont use psum!!
 
-	df_obs= pd.read_csv(path_inp, index_col=0, parse_dates=True)
+	df_obs= pd.read_csv(path_inpt, index_col=0, parse_dates=True)
 
 	# coorect for toposcale error where PINT = PSUM at 3hr timestep. now it is mm/h 19/8/20
 	#psum is actually wrong! 20/8/20 eg this is too little:
@@ -144,10 +144,10 @@ def main(raw_dir, mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_peri
 	# df_obs.PSUM *= 3.
 
 	# # resample 3h OBS to 1h data (psum no longer valid) - can use 1h data directly here in future
-	# df_interpol = df_obs.resample('H').mean()
-	# df_interpol = df_interpol.interpolate()
-	# df_interpol.head(4)
-	# df_interpol.PSUM *= 1/3. # devide by 3 as is psum over 3h
+	#df_interpol = df_obs.resample('H').mean()
+	#df_interpol = df_interpol.interpolate()
+	#df_interpol.head(4)
+	#df_interpol.PSUM *= 1/3. # devide by 3 as is psum over 3h
 	
 	# now interpolation done in preprocessing
 	df_interpol = df_obs
@@ -271,7 +271,7 @@ def main(raw_dir, mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_peri
 
 
 
-	for nc in nc_complete[41:44]:
+	for nc in nc_complete:
 		print(nc)
 		#nc=nc_complete[9] no leapS
 		#nc=nc_complete[10] # 360 day
@@ -393,8 +393,8 @@ def main(raw_dir, mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_peri
 		
 		# filter tmin /tmax error in #'/home/joel/sim/qmap/test/pyout/aresult/MOHC-HadGEM2-ES_historical_r1i1p1_CLMcom-CCLM5-0-6_v1__TS.nc_TS_ALL_ll.nc'
 		# vals of 500 / 20
-		df4.tmin = df4.tmin[df4.tmin>330]=np.nan
-		df4.tmax = df4.tmax[df4.tmax<220]=np.nan
+		df4.tmin[df4.tmin>330]=np.nan
+		df4.tmax[df4.tmax<220]=np.nan
 
 		# for case of 360 calender that ends on dec 26 (rare) for example:
 		#'/home/joel/sim/qmap/test/pyout/aresult/MOHC-HadGEM2-ES_historical_r1i1p1_CLMcom-CCLM5-0-6_v1__TS.nc_TS_ALL_ll.nc'
@@ -583,6 +583,6 @@ if __name__ == '__main__':
 	cal_period  = sys.argv[7]
 	val_period  = sys.argv[8]
 	plot_period = sys.argv[9]
-	path_inp      = sys.argv[10]
+	path_inpt      = sys.argv[10]
 	outdir = sys.argv[11]
-	main(raw_dir,mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_period, val_period, plot_period, path_inp, oudir)			
+	main(raw_dir,mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_period, val_period, plot_period, path_inpt, oudir)			

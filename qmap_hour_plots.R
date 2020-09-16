@@ -1,9 +1,9 @@
 require(qmap)
 require(ncdf4)
-require(caTools)
-require(pracma)
-require(hydroGOF)
-require(wesanderson)
+#require(caTools)
+##require(pracma)
+#require(hydroGOF)
+#require(wesanderson)
 
 # Args:
 	
@@ -171,7 +171,7 @@ print(var)
 		hist_qmap_list[[modelChain]][['pars_spring']]<-pars_spring 
 		}
 
-		hist_qmap_list_NOPARS = lapply(hist_qmap_list, `[[`, 1)
+	hist_qmap_list_NOPARS = lapply(hist_qmap_list, `[[`, 1)
 	mydata=hist_qmap_list_NOPARS
 	modelNames = names(mydata)
 	df=as.data.frame(mydata)
