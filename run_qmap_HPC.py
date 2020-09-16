@@ -1,6 +1,4 @@
 
-import pandas as pd
-
 import subprocess
 import os
 

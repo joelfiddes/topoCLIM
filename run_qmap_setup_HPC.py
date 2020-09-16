@@ -1,6 +1,7 @@
 import sys
 import os
 sys.path.append(os.getcwd()) 
+sys.path.append('/home/caduff/src/topoCLIM/tclim3/lib/python3.7/site-packages')
 import run_qmap_HPC
 import pandas as pd
 import glob
@@ -8,7 +9,7 @@ import logging
 import resample_timeseries as resamp
 import topoCLIM as tclim
 from joblib import Parallel, delayed
-sys.path.append('/home/caduff/src/topoCLIM/tclim3/lib/python3.7/site-packages')
+
 
 num_cores = int(sys.argv[1]) # Must input number of cores
 
