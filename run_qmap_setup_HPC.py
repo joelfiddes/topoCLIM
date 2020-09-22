@@ -18,7 +18,7 @@ num_cores = int(sys.argv[1]) # Must input number of cores
 
 
 wd = "/home/joel/sim/qmap"
-tscale_sim_dir = wd+ "/GR_data/sim/g3/"
+tscale_sim_dir = wd+ "/GR_data/sim/g4/"
 indir = wd+"/topoclim_test_hpc/"
 
 #===============================================================================
@@ -29,6 +29,7 @@ raw_dir= wd+'/raw_cordex/'
 
 if not os.path.exists(indir):
 	os.makedirs(indir)
+
 
 # to clear logger: https://stackoverflow.com/questions/30861524/logging-basicconfig-not-creating-log-file-when-i-run-in-pycharm
 for handler in logging.root.handlers[:]:
@@ -50,7 +51,7 @@ plot_period = slice('2016-09-03', '2030-10-13')
 # tscale_sim dir
 
 grid = tscale_sim_dir.split('/')[-2]
-grid='g3'
+
 #===============================================================================
 # qmap_hor-plots.R settings
 #===============================================================================
@@ -67,6 +68,12 @@ mylat = lp.lat.mean()# normally all lat are the same (grid centre), however rece
 tz = lp.tz.mean()
 tscale_files = glob.glob(tscale_sim_dir+"/forcing/"+ "meteoc*")
 
+# clean up old resamples
+for f in glob.glob(tscale_sim_dir+"/forcing/"+ "*1H.csv"):
+	os.remove(f)
+
+
+
 # run topoClim precprocessing to generate files corresponding to grid centre
 
 path_inpt = tscale_files[0] # just take first one for dissagregation as they are all scaled versions of one another - the signal should be fine but need to test. Incentive is to run this only once per grid = large efficiency gains
@@ -75,7 +82,8 @@ path_inpt_1H = resamp.main(path_inpt)
 logging.info("run topoclim")
 #tclim.main(raw_dir, mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_period, val_period, plot_period, path_inpt_1H, root)
 
-
+# delete path_inpt_1H sonot reprocessed
+os.remove(path_inpt_1H)
 
 # all jobs
 tscale_files_sort = sorted(tscale_files)

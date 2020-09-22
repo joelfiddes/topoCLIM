@@ -3,19 +3,25 @@ import glob
 import pandas as pd
 import numpy as np
 import os
+from tqdm import tqdm
 slope=0
 fsm_out=True
-indir="/home/joel/sim/qmap/topoclim/fsm/"
-outdir=indir+"/meteo/"
-qfiles = glob.glob(indir + "*QMAP.txt")
+grid="g4"
+#indir="/home/joel/sim/qmap/topoclim/fsm/"
+indir="/home/joel/sim/qmap/topoclim_test_hpc"
+os.chdir(indir)   
+#outdir=indir+"/meteo/"
+qfiles = glob.glob(indir + "/"+grid+"/*/fsm/*QMAP.txt")
 
-if not os.path.exists(outdir):
-	os.makedirs(outdir)
+
 
 
 for qfile in qfiles:
 	print(qfile)
 	qdat= pd.read_csv(qfile, index_col=0, parse_dates=True)
+	outdir = os.path.split(qfile)[0]  + "/meteo/"
+	if not os.path.exists(outdir):
+		os.makedirs(outdir)
 
 
 	#======================================================================================
@@ -108,19 +114,28 @@ import sys
 namelist="/home/joel/sim/qmap/topoclim/fsm/nlst_qmap.txt"
 #os.system('./compil.sh')
 
-METEOFILES  = glob.glob(outdir + "*FSM.txt")
+#METEOFILES  = glob.glob(outdir + "*FSM.txt")
+METEOFILES = glob.glob(indir + "/"+grid+"/*/fsm/meteo/*FSM.txt")
 
 
 
-try:
-    os.mkdir('output')
-except:
-    pass
 
-for METEOFILE in METEOFILES:
+os.chdir(indir)
+for METEOFILE in tqdm(METEOFILES):
 	print(METEOFILE)
+
+	METEOFILENAME = os.path.split(METEOFILE)[1]
+	METEOFILEPATH = os.path.split(METEOFILE)[0]
+	FSMPATH = os.path.split(METEOFILEPATH)[0] 
+	try:
+		os.mkdir(FSMPATH+'/output')
+	except:
+    	pass
+
+
 	#for n in 31: #range(32):
 	n=31
+
     config = np.binary_repr(n, width=5)
     print('Running FSM configuration ',config,n)
     f = open('nlst.txt', 'w')
@@ -131,14 +146,17 @@ for METEOFILE in METEOFILES:
             if 'config' in line:
                 f.write('  nconfig = '+str(n)+'\n')
             if 'drive' in line:
-            	METEOFILENAME=METEOFILE.split(indir+'/meteo/')[1]
                 f.write('  met_file = ' +"'./meteo/"+METEOFILENAME+"'"+'\n')
             if 'out_file' in line:
                 out_file = line.rsplit()[-1]
             out_name = out_file.replace('.txt','')
     f.close()
+
+    os.system("cp FSM " +FSMPATH)
+    os.system("cp nlst.txt " +FSMPATH)
+    os.chdir(FSMPATH)
     os.system('./FSM < nlst.txt')
-    save_file = 'output/'+METEOFILENAME+ out_name+'_'+config+'.txt'
+    save_file = FSMPATH + '/output/'+METEOFILENAME+ out_name+'_'+config+'.txt'
     os.system('mv '+out_file+' '+save_file)
 		#os.system('rm nlst.txt')
 
@@ -360,6 +378,7 @@ ax = plt.gca()
 
 optim_year['HS'][optim_year['HS']<0] = np.nan
 wfj_HS = optim_year['HS'][0:-1] # drop incomplete 2019
+wfj_HS.name="HS_obs" 
 wfj_HS.plot(color='red')
 
 plt.fill_between(hist_mean_year.index, hist_mean_year-hist_std_year , hist_mean_year+hist_std_year , alpha=0.2)

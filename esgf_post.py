@@ -2,18 +2,21 @@ import glob
 import os
 import xarray as xr
 import pandas as pd
+import geopandas as gpd
 
 outdir="/home/joel/sim/qmap/raw_cordex/"
 domain='EUR-44'
 time_frequency='day' #3hr' #
 ts_dir=outdir+"aresult/"
+era5spatialRef = "/home/joel/sim/qmap/GR_data/spatial/idPoly.shp"
 
-# define domain here:
-lonE = int(5)
-lonW = int(11)
-latS = int(45)
-latN = int(48)
-res=0.5 # output grid resolution in degrees
+# define domain here based on era5 domain
+era5ref = gpd.read_file(era5spatialRef).total_bounds 
+lonE = era5ref[2] #int(5)
+lonW = era5ref[0] #int(11)
+latS = era5ref[1]#int(45)
+latN = era5ref[3]#int(48)
+res=0.25 # output grid resolution in degrees
 
 # define and construct coords config for remapbil which  describes reprojection
 coordsPath = outdir+ "coords.txt"
@@ -21,7 +24,7 @@ coordsPath = outdir+ "coords.txt"
 # write remapbil config file
 f = open(coordsPath, "w")
 f.write("gridtype = " + "lonlat\n")
-f.write("xsize = " + str(int((lonW-lonE)/res))+"\n")
+f.write("xsize = " + str(int((lonE-lonW)/res))+"\n")
 f.write("ysize = " + str(int((latN-latS)/res))+"\n")
 f.write("xfirst = " + str(lonE)+"\n")
 f.write("xinc = " + str(res)+"\n")
@@ -58,10 +61,9 @@ for ru in root_unique:
 os.system("rm "+ ts_dir+"*_TS_ALL.nc")
 os.system("rm "+ ts_dir+"*_TS.nc")
 
+
 # analyse results
 results = glob.glob(ts_dir+"*.nc")
-
-
 
 d=[]
 

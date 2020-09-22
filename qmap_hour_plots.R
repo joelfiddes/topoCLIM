@@ -62,6 +62,12 @@ myvars=c('TA', 'RH', 'VW', 'DW', 'P', 'ISWR', 'ILWR','PINT')
 for (var in myvars){
 print(var)
 
+if (file.exists(paste0(outdir,"/hist_",var)) & file.exists(paste0(outdir,"/26_",var)) 
+	& file.exists(paste0(outdir,"/rcp85_",var)) ){cat(paste0(var, " already done!"), file = stderr());next}
+
+
+
+
 	if(var=="TA"){obsindex <-11; convFact <-1; modindex <- 2} # K
 		if(var=="RH"){obsindex <-8; convFact <-100; modindex <- 3} # 0-1 -> 0-100
 			if(var=="VW"){obsindex <-12; convFact <-1; modindex <- 4}# ms-1
@@ -87,6 +93,8 @@ print(var)
 	obs_cp_period= obs_var[start_obs: end_obs]
 	obs_cp_dates = obs_datetime[start_obs: end_obs]
 
+
+	
 	# Cordex historical "1970-01-01 12" UTC" to 2005-12-30 12"======================
 	hist_qmap_list <- list()
 	hist_nqmap <- list()
@@ -95,7 +103,8 @@ print(var)
 	modelChain_vec=c()
 
 	for (hist_file in hist_files){
-
+	# check if done
+	
 
 		print(hist_file)
 		modelNameBase = unlist(strsplit(hist_file,'/'))[length(unlist(strsplit(hist_file,'/')))]
@@ -179,13 +188,16 @@ print(var)
 	df$Date<-cordex_dates_cp 
 	save(df,file = paste0(outdir,"hist_",var))
 
+
 	# Cordex rcp26 =======================================================================
+
 	rcp26_qmap_list <- list()
 	rcp26_nqmap <- list()
 	rcp26_qmap_season_list <- list()
 
 	for (rcp26_file in rcp26_files){
-
+		# check if done
+	
 		print(rcp26_file)
 		modelNameBase = unlist(strsplit(rcp26_file,'/'))[length(unlist(strsplit(rcp26_file,'/')))]
 		GCM = unlist(strsplit(modelNameBase,'_rcp26_'))[1]
@@ -247,11 +259,13 @@ print(var)
 
 
 	# Cordex rcp85 2006-2100=======================================================================
+
 	rcp85_qmap_list <- list()
 	rcp85_nqmap <- list()
 	rcp85_qmap_season_list <- list()
 	for (rcp85_file in rcp85_files){
-
+		# check if done
+		if (file.exists(paste0(outdir,"/rcp85_",var))){cat(paste0(var, " already done!"), file = stderr());next}
 		print(rcp85_file)
 
 		modelNameBase = unlist(strsplit(rcp85_file,'/'))[length(unlist(strsplit(rcp85_file,'/')))]

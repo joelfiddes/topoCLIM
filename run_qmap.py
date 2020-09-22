@@ -26,7 +26,7 @@ val_period = slice('2016-01-01', '2016-12-31')
 plot_period = slice('2016-09-03', '2030-10-13')
 
 # tscale_sim dir
-tscale_sim_dir = "/home/joel/sim/qmap/GR_data/sim/g3_id/"
+tscale_sim_dir = "/home/joel/sim/qmap/GR_data/sim/g3/"
 grid = tscale_sim_dir.split('/')[-2]
 grid='g3'
 #===============================================================================
