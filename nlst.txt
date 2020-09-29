@@ -3,7 +3,7 @@
   nconfig = 31
 /
 &drive
-  met_file = './meteo/IPSL-IPSL-CM5A-MR_SMHI-RCA4_HIST_QMAP.txt_FSM.txt'
+  met_file = './meteo/ICHEC-EC-EARTH_SMHI-RCA4_HIST_QMAP_HOURLY.txt_FSM.txt'
   zT = 1.5
   zvar = .FALSE.
 /

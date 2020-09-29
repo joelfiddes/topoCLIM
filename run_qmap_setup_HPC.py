@@ -41,7 +41,7 @@ logging.basicConfig(level=logging.DEBUG, filename=indir+"/logfile",filemode="a+"
 
 # standard calender examples (can be any file with standard cal) to interp non-standard cals to in hist and clim period
 nc_standard_clim=raw_dir+'/aresult/ICHEC-EC-EARTH_rcp85_r12i1p1_CLMcom-CCLM5-0-6_v1__TS.nc_TS_ALL_ll.nc'
-nc_standard_hist=raw_dir+'/aresult/ICHEC-EC-EARTH_historical_r1i1p1_KNMI-RACMO22E_v1__TS.nc_TS_ALL_ll.nc'
+nc_standard_hist=raw_dir+'/aresult/ICHEC-EC-EARTH_historical_r1i1p1_KNMI-RACMO22E_v1__TS.nc_TS_ALL_ll.nc' # exists?
 
 # time periods
 cal_period = slice('2000-01-01', '2015-12-31')
@@ -72,7 +72,8 @@ tscale_files = glob.glob(tscale_sim_dir+"/forcing/"+ "meteoc*")
 for f in glob.glob(tscale_sim_dir+"/forcing/"+ "*1H.csv"):
 	os.remove(f)
 
-
+# rerun
+tscale_files = glob.glob(tscale_sim_dir+"/forcing/"+ "meteoc*")
 
 # run topoClim precprocessing to generate files corresponding to grid centre
 
@@ -80,7 +81,7 @@ path_inpt = tscale_files[0] # just take first one for dissagregation as they are
 path_inpt_1H = resamp.main(path_inpt)
 
 logging.info("run topoclim")
-#tclim.main(raw_dir, mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_period, val_period, plot_period, path_inpt_1H, root)
+tclim.main(raw_dir, mylon, mylat, tz, nc_standard_clim, nc_standard_hist, cal_period, val_period, plot_period, path_inpt_1H, root)
 
 # delete path_inpt_1H sonot reprocessed
 os.remove(path_inpt_1H)

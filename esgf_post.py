@@ -22,13 +22,14 @@ res=0.25 # output grid resolution in degrees
 coordsPath = outdir+ "coords.txt"
 
 # write remapbil config file
+# remapping is done to grid centres thats why we add half a gridbox (res/2)
 f = open(coordsPath, "w")
 f.write("gridtype = " + "lonlat\n")
 f.write("xsize = " + str(int((lonE-lonW)/res))+"\n")
 f.write("ysize = " + str(int((latN-latS)/res))+"\n")
-f.write("xfirst = " + str(lonE)+"\n")
+f.write("xfirst = " + str(lonW+res/2)+"\n")
 f.write("xinc = " + str(res)+"\n")
-f.write("yfirst = " + str(latS)+"\n")
+f.write("yfirst = " + str(latS+res/2)+"\n")
 f.write("yinc = "+ str(res)+"\n")
 f.close()
 
