@@ -4,7 +4,7 @@ import glob
 import numpy as np
 cal_period = slice('2000-01-01', '2015-12-31')
 
-def main(daily_cordex,hourly_obs, outfile, mylon, mylat,mytz):
+def main(daily_cordex,hourly_obs, mylon, mylat,mytz):
 
 	print(mytz)
 	df_obs= pd.read_csv(hourly_obs, index_col=0, parse_dates=True)
@@ -83,7 +83,7 @@ def main(daily_cordex,hourly_obs, outfile, mylon, mylat,mytz):
 #	station.data_disagg['ILWR'][-1] =station.data_disagg['ILWR'][-2] 
 	#plot(data_obs_hourly.ilwr,station.data_disagg.ILWR)
 
-	outname=daily_cordex.split('.txt')[0]+  '_HOURLY.txt' 
+	outname=daily_cordex.split('.txt')[0]+  '_H.txt' 
 	dates=station.data_disagg.temp.index  
 	df_fsm= pd.DataFrame({	
 
@@ -113,5 +113,7 @@ if __name__ == '__main__':
 	import sys
 	daily_cordex[1]
 	hourly_obs = sys.argv[2]
-	outfile = sys.argv[3]
-	main(daily_cordex,hourly_obs, outfile)			
+	mylon = sys.argv[3]
+	mylat = sys.argv[4]
+	mytz = sys.argv[5]
+	main(daily_cordex,hourly_obs,  mylon, mylat,mytz)			

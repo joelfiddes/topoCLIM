@@ -223,8 +223,22 @@ print(var)
 	df=as.data.frame(mydata)
 	names(df)<-modelNames
 	df$Date<-cordex_dates_cp 
-	save(df,file = paste0(outdir,"hist_",var))
+	save(df,file = paste0(outdir,"hist_qmap_",var))
 
+	hist_qmap_list_NOPARS = lapply(hist_qmap_season_list, `[[`, 1)
+	mydata=hist_qmap_list_NOPARS
+	modelNames = names(mydata)
+	df=as.data.frame(mydata)
+	names(df)<-modelNames
+	df$Date<-cordex_dates_cp 
+	save(df,file = paste0(outdir,"hist_season_",var))
+
+	mydata=hist_nqmap
+	modelNames = names(mydata)
+	df=as.data.frame(mydata)
+	names(df)<-modelNames
+	df$Date<-cordex_dates_cp 
+	save(df,file = paste0(outdir,"hist_nmap_",var))
 
 	# Cordex rcp26 =======================================================================
 
@@ -314,9 +328,21 @@ print(var)
 	df=as.data.frame(mydata)
 	names(df)<-modelNames
 	df$Date<- greg_cal_rcp[si:ei]
-	save(df,file = paste0(outdir,"rcp26_",var))
+	save(df,file = paste0(outdir,"rcp26_qmap_",var))
 
+	mydata=rcp26_qmap_season_list
+	modelNames = names(mydata)
+	df=as.data.frame(mydata)
+	names(df)<-modelNames
+	df$Date<-greg_cal_rcp[si:ei]
+	save(df,file = paste0(outdir,"rcp26_season_",var))
 
+	mydata=rcp26_nqmap
+	modelNames = names(mydata)
+	df=as.data.frame(mydata)
+	names(df)<-modelNames
+	df$Date<-greg_cal_rcp[si:ei]
+	save(df,file = paste0(outdir,"rcp26_nmap_",var))
 	# Cordex rcp85 2006-2100=======================================================================
 
 	rcp85_qmap_list <- list()
@@ -398,8 +424,22 @@ print(var)
 	modelNames = names(mydata)
 	df=as.data.frame(mydata)
 	names(df)<-modelNames
+	df$Date<- greg_cal_rcp[si:ei]
+	save(df,file = paste0(outdir,"rcp85_qmap_",var))
+
+	mydata=rcp85_qmap_season_list
+	modelNames = names(mydata)
+	df=as.data.frame(mydata)
+	names(df)<-modelNames
 	df$Date<-greg_cal_rcp[si:ei]
-	save(df,file = paste0(outdir,"rcp85_",var))
+	save(df,file = paste0(outdir,"rcp85_season_",var))
+
+	mydata=rcp85_nqmap
+	modelNames = names(mydata)
+	df=as.data.frame(mydata)
+	names(df)<-modelNames
+	df$Date<-greg_cal_rcp[si:ei]
+	save(df,file = paste0(outdir,"rcp85_nmap_",var))
 
 }
 #=====================================================================
@@ -420,7 +460,11 @@ print(var)
 
 fsmdir=paste0(indir,"/fsm/")
 dir.create(fsmdir)
-results = list.files(path = paste0(indir,"/aqmap_results/"),full.names=T )
+
+results1 = list.files(path = paste0(indir,"/aqmap_results/"),full.names=T )
+results = results1[ grep('_qmap_',results1)]
+
+print(results)
 hist = results[grep("hist",results)]
 rcp26 = results[grep("rcp26",results)]
 rcp85 = results[grep("rcp85",results)]
@@ -470,8 +514,8 @@ for (model in models){
 	modellist['TAMAX']<- TAMAX[model]
 	df = as.data.frame(modellist)
 	df[c(2:5, 7:11)] =round(df[c(2:5, 7:11)],1)
-	df[6 ] = round(df[c(6)],4)
-	write.csv(df, paste0(fsmdir, model, "_",typ,"_QMAP.txt"), row.names=FALSE)
+	df[6 ] = round(df[c(6)],6)
+	write.csv(df, paste0(fsmdir, model, "_",typ,"_Q.txt"), row.names=FALSE)
 	
 }
 
@@ -519,8 +563,8 @@ for (model in models){
 	modellist['TAMAX']<- TAMAX[model]
 	df = as.data.frame(modellist)
 	df[c(2:5, 7:11)] =round(df[c(2:5, 7:11)],1)
-	df[6 ] = round(df[c(6)],4)
-	write.csv(df, paste0(fsmdir, model, "_",typ,"_QMAP.txt"), row.names=FALSE)
+	df[6 ] = round(df[c(6)],6)
+	write.csv(df, paste0(fsmdir, model, "_",typ,"_Q.txt"), row.names=FALSE)
 	
 }
 
@@ -567,7 +611,7 @@ for (model in models){
 	modellist['TAMAX']<- TAMAX[model]
 	df = as.data.frame(modellist)
 	df[c(2:5, 7:11)] =round(df[c(2:5, 7:11)],1)
-	df[6 ] = round(df[c(6)],4)
-	write.csv(df, paste0(fsmdir, model, "_",typ,"_QMAP.txt"), row.names=FALSE)
+	df[6 ] = round(df[c(6)],6)
+	write.csv(df, paste0(fsmdir, model, "_",typ,"_Q.txt"), row.names=FALSE)
 	
 }
