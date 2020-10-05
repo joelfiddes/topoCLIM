@@ -59,7 +59,7 @@ def main(daily_cordex,hourly_obs, mylon, mylat,mytz):
 	#final dissagregation with selected methods
 	station.disaggregate_temperature(method='sine_mean')
 	station.disaggregate_humidity(method='equal')
-	station.disaggregate_radiation(method='pot_rad_via_bc')
+	station.disaggregate_radiation(method='pot_rad')
 	station.disaggregate_wind(method='random')
 	station.disaggregate_precipitation(method='equal')
 

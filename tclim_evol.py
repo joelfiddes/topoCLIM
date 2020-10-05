@@ -193,6 +193,7 @@ def extract_timeseries(ncfile, lon, lat):
 	df = ds.sel(lon=longitude, lat=latitude, method='nearest').to_dataframe()
 	return(df)
 
+
 def met2fsm(qfile, slope): 
 
 	qdat= pd.read_csv(qfile, index_col=0, parse_dates=True)
@@ -329,6 +330,8 @@ def spatialfsm_base(root):
 		timeslicehist.append(swe['1980-01-01' :'2000-01-01'].max()	)		
 
 	pd.Series.timeslicehist.to_csv(root+"/timeslicehist.csv",header=False, float_format='%.3f') 
+
+
 
 def spatialfsm(root):
 	meanhist=[]
@@ -490,12 +493,51 @@ def fsm_sim(meteofile, namelist, fsmexepath):
 
 	
 	#os.system("cp nlst.txt " +FSMPATH)
-	
 	os.system('./FSM < nlst.txt')
 	save_file = FSMPATH + '/output/'+METEOFILENAME+'_'+config+'.txt'
 	os.system('mv '+out_file+' '+save_file)
 		#os.system('rm nlst.txt')
 
+def fsm_sim_era5(meteofile, namelist, fsmexepath):
+	# fsm executable must exist in indir
+	print(meteofile)
+
+	METEOFILENAME = os.path.split(meteofile)[1]
+	METEOFILEPATH = os.path.split(meteofile)[0]
+	FSMPATH = os.path.split(METEOFILEPATH)[0] 
+	if not os.path.exists(FSMPATH+"/FSM"): 
+		os.system("cp "+fsmexepath +" " +FSMPATH)
+	os.chdir(FSMPATH)
+	try:
+		os.mkdir(FSMPATH+'/output')
+	except:
+		pass
+
+
+	#for n in 31: #range(32):
+	n=31
+	config = np.binary_repr(n, width=5)
+	print('Running FSM configuration ',config,n)
+	f = open('nlst.txt', 'w')
+	out_file = 'out.txt'
+	with open(namelist) as file:
+		for line in file:
+			f.write(line)
+			if 'config' in line:
+				f.write('  nconfig = '+str(n)+'\n')
+			if 'drive' in line:
+				f.write('  met_file = ' +"'./forcing/"+METEOFILENAME+"'"+'\n')
+			if 'out_file' in line:
+				out_file = line.rsplit()[-1]
+			out_name = out_file.replace('.txt','')
+	f.close()
+
+	
+	#os.system("cp nlst.txt " +FSMPATH)
+	os.system('./FSM < nlst.txt')
+	save_file = FSMPATH + '/output/'+METEOFILENAME+'_'+config+'.txt'
+	os.system('mv '+out_file+' '+save_file)
+		#os.system('rm nlst.txt')
 #===============================================================================
 # KODE
 #===============================================================================
@@ -549,6 +591,7 @@ Parallel(n_jobs=int(num_cores))(delayed(tclim_main)(tscale_file) for tscale_file
 
 # converts standard output to FSm or...
 qfiles = tqdm(sorted(glob.glob(root+"/*/fsm/*Q_H.txt")))
+#qfiles = tqdm(sorted(glob.glob(root+"/smeteoc6_1D/fsm/*Q_H.txt")))
 #for qfile in tqdm(qfiles):
 Parallel(n_jobs=int(num_cores))(delayed(met2fsm_parallel)(qfile) for qfile in qfiles)
 # cleanup _HOURLY.txt
@@ -556,6 +599,7 @@ Parallel(n_jobs=int(num_cores))(delayed(met2fsm_parallel)(qfile) for qfile in qf
 
 # Simulate FSm
 meteofiles = tqdm(sorted(glob.glob(root+"/*/fsm/meteo/*F.txt")))
+#meteofiles = tqdm(sorted(glob.glob(root+"/smeteoc6_1D/fsm/meteo/*F.txt")))
 #os.chdir(indir)
 Parallel(n_jobs=int(num_cores))(delayed(fsm_sim)(meteofile,namelist,fsmexepath) for meteofile in meteofiles)
 
@@ -581,14 +625,6 @@ spatialfsm(root)
 #findCompress(root + "/**/meteo")  
 #findDelete(root+"/**/meteo", dir=True)
 
-
-
-
-
-file="/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/out.txt"  
-file="/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/CNRM-CERFACS-CNRM-CM5_SMHI-RCA4_HIST_F.txt"
-
-file="/home/joel/sim/qmap/GR_data/sim/g3/out/FSM/fsm001.txt_00.txt"
 def plot_fsm(file, col):
 	df =pd.read_csv(file, delim_whitespace=True, parse_dates=[[0,1,2]], header=None) 
 	df.set_index(df.iloc[:,0], inplace=True)  
@@ -597,8 +633,45 @@ def plot_fsm(file, col):
 	plot(swe)
 
 
+def experiments():
+
+	file="/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/out.txt"  
+	file="/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/CNRM-CERFACS-CNRM-CM5_SMHI-RCA4_HIST_F.txt"
+
+	file="/home/joel/sim/qmap/GR_data/sim/g3/out/FSM/fsm001.txt_00.txt"
+
+
 	file="/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/out.txt" 
-	plot_fsm(file, 2)
+
+
+	fsmfiles = (sorted(glob.glob(root+"/*/fsm/output/*11111.txt")))
+
+	root="//home/joel/sim/qmap/GR_data/sim/g3/out/FSM_config31/"
+	fsmfiles = (sorted(glob.glob(root+"/fsm*")))
+
+
+	fsmfiles = (sorted(glob.glob(root+"/*/fsm/output/*11111.txt")))
+	col=2
+	from matplotlib.backends.backend_pdf import PdfPages
+	with PdfPages(root+'/tclim_plots.pdf') as pdf:
+		for f in fsmfiles:
+			print(f)
+			try:
+				df =pd.read_csv(f, delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
+			except:
+				continue 
+			df.set_index(df.iloc[:,0], inplace=True)  
+			df.drop(df.columns[[0]], axis=1, inplace=True )  
+			swe=df.iloc[:,col]
+			try:
+				swe.plot(title="ID:"+ f  )
+			except:
+				continue
+			#plt.xlim(pd.Timestamp('1979-01-01'), pd.Timestamp('1980-01-01'))
+			#plt.show() 
+			pdf.savefig()  # saves the current figure into a pdf page
+			plt.close()
+
 
 
 	file = '/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/CNRM-CERFACS-CNRM-CM5_CLMcom-CCLM5-0-6_HIST_Q.txt' 
@@ -608,3 +681,81 @@ def plot_fsm(file, col):
 	hr1 =pd.read_csv(file, parse_dates=True)
 	file="/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/CNRM-CERFACS-CNRM-CM5_CLMcom-CCLM5-0-6_HIST_Q_HOURLY.txt"
 	hr2 =pd.read_csv(file, parse_dates=True)
+
+
+	file= "/home/joel/sim/qmap/GR_data/forcing/fsm006.txt"
+	era5 =pd.read_csv(file, delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
+
+	# to tes
+	filestotest = glob.glob("/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/meteo/*_F.txt")
+
+	for f in filestotest:
+		clim =pd.read_csv(f,delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
+		print(clim.iloc[:,6].mean()  )
+
+
+	plot(era5.iloc[:,2], clim.iloc[:,2])
+
+	era5.iloc[:,6].plot()
+	clim.iloc[:,2].plot()
+	plt.show()
+
+	plt.scatter(era5.iloc[:,6] , clim.iloc[:,2])
+
+
+	# configs are good 00 and 31 more or less the same
+
+	# test all forcings
+	col=9
+	file="/home/joel/sim/qmap/GR_data/forcing/fsm006.txt"
+	df =pd.read_csv(file, delim_whitespace=True, parse_dates=[[0,1,2,3]], header=None)
+	df.set_index(df.iloc[:,0], inplace=True)  
+	df.drop(df.columns[[0]], axis=1, inplace=True )
+	era51h =df.resample('1H').interpolate()
+	print(era5.iloc[:,col].mean()  )
+
+
+	filestotest = glob.glob("/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/meteo/*HIST_F.txt")
+
+	climmean=[]
+	for f in filestotest:
+		clim =pd.read_csv(f,delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
+		climmean.append(clim.iloc[:,col].mean() )
+	print(np.mean(climmean  ))
+
+	col=6
+	filestotest = (sorted(glob.glob(root+"/smeteoc6_1D/fsm/output/*11111.txt")))
+	for f in filestotest:
+		df =pd.read_csv(f,delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
+		df.set_index(df.iloc[:,0], inplace=True)  
+		df.drop(df.columns[[0]], axis=1, inplace=True )  
+		swe=df.iloc[:,2]
+		swe.plot(title="ID:"+ f  )
+		plt.show()
+
+
+	# tests show sw is half and ta has -3deg bias, by simple bias correction results are much better - what is wrong with qmap /diaagg?
+	# now test how daily data looks	
+
+
+	file = '/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/CNRM-CERFACS-CNRM-CM5_CLMcom-CCLM5-0-6_HIST_Q.txt' 
+	q1 =pd.read_csv(file, parse_dates=True)
+	file="/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/CNRM-CERFACS-CNRM-CM5_CLMcom-CCLM5-0-6_HIST_Q_H.txt"
+	hr1 =pd.read_csv(file, parse_dates=True)
+	file= "/home/joel/sim/qmap/GR_data/forcing/fsm006.txt"
+	era5 =pd.read_csv(file, delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
+
+
+# In [78]: q1.ISWR.mean()                                                                                                                                                             
+# Out[78]: 152.95145001013992                                                                                                                                                         
+# In [79]: hr1.ISWR.mean()                                                                                                                                                            
+# Out[79]: 49.450357362678844                                                                                                                                                         
+# In [82]: era5.iloc[:,2].mean()                                                                                                                                                      
+# Out[82]: 119.06607230607231    
+
+# In [83]: hr1.TA.mean()                                                                                                                                                              
+# Out[83]: 271.824690732103                                                                                                                                                           
+# In [84]: q1.TA.mean()                                                                                                                                                               
+# Out[84]: 271.748326911377 
+# In [87]: era5.iloc[:,6].mean()                                                                                                                                                      
+# Out[87]: 274.4854905229906     
