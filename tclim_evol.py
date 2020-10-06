@@ -30,11 +30,13 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
+
+grid= (sys.argv[1])
 #===============================================================================
 # INPUT
 #===============================================================================
 wd = "/home/joel/sim/qmap"
-grid='g3'
+#grid='g3'
 raw_dir= wd+'/raw_cordex/'
 nc_standard_clim=raw_dir+'/aresult/standard/ICHEC-EC-EARTH_rcp85_r12i1p1_CLMcom-CCLM5-0-6_v1__TS.nc_TS_ALL_ll.nc'
 nc_standard_hist=raw_dir+'/aresult/standard/ICHEC-EC-EARTH_historical_r12i1p1_KNMI-RACMO22E_v1__TS.nc_TS_ALL_ll.nc'
@@ -195,7 +197,7 @@ def extract_timeseries(ncfile, lon, lat):
 
 
 def met2fsm(qfile, slope): 
-
+	print("Converting meteo to FSM format, computing snow fractions and filtering bad vals")
 	qdat= pd.read_csv(qfile, index_col=0, parse_dates=True)
 	outdir = os.path.split(qfile)[0]  + "/meteo/"
 	if not os.path.exists(outdir):
@@ -293,7 +295,7 @@ def met2fsm(qfile, slope):
 	# | Ua       | m s<sup>-1</sup> | Wind speed |
 	# | Ps       | Pa     | Surface air pressure 
 
-	print("Written "+ outdir+outname )
+	#print("Written "+ outdir+outname )
 
 
 
@@ -459,7 +461,7 @@ def met2fsm_parallel(qfile):
 
 def fsm_sim(meteofile, namelist, fsmexepath):
 	# fsm executable must exist in indir
-	print(meteofile)
+	#print(meteofile)
 
 	METEOFILENAME = os.path.split(meteofile)[1]
 	METEOFILEPATH = os.path.split(meteofile)[0]
@@ -476,7 +478,7 @@ def fsm_sim(meteofile, namelist, fsmexepath):
 	#for n in 31: #range(32):
 	n=31
 	config = np.binary_repr(n, width=5)
-	print('Running FSM configuration ',config,n)
+	#print('Running FSM configuration ',config,n)
 	f = open('nlst.txt', 'w')
 	out_file = 'out.txt'
 	with open(namelist) as file:
@@ -498,46 +500,38 @@ def fsm_sim(meteofile, namelist, fsmexepath):
 	os.system('mv '+out_file+' '+save_file)
 		#os.system('rm nlst.txt')
 
-def fsm_sim_era5(meteofile, namelist, fsmexepath):
-	# fsm executable must exist in indir
-	print(meteofile)
 
-	METEOFILENAME = os.path.split(meteofile)[1]
-	METEOFILEPATH = os.path.split(meteofile)[0]
-	FSMPATH = os.path.split(METEOFILEPATH)[0] 
-	if not os.path.exists(FSMPATH+"/FSM"): 
-		os.system("cp "+fsmexepath +" " +FSMPATH)
-	os.chdir(FSMPATH)
-	try:
-		os.mkdir(FSMPATH+'/output')
-	except:
-		pass
+def plot_hs(fsmfiles):
 
+	col=2
+	from matplotlib.backends.backend_pdf import PdfPages
+	with PdfPages(root+'/tclim_hs_plots.pdf') as pdf:
+		for f in tqdm(fsmfiles):
+		
+			try:
+				df =pd.read_csv(f, delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
+			except:
+				continue 
+			df.set_index(df.iloc[:,0], inplace=True)  
+			df.drop(df.columns[[0]], axis=1, inplace=True )  
+			hs=df.iloc[:,col]
+			try:
+				title = f.split(grid)[1].split("_F.txt_11111.txt")[0].split("fsm/output/")
+				hs.plot(title="ID:"+ title[0]+title[1]  )
+			except:
+				continue
+			#plt.xlim(pd.Timestamp('1979-01-01'), pd.Timestamp('1980-01-01'))
+			#plt.show() 
+			pdf.savefig()  # saves the current figure into a pdf page
+			plt.close()
 
-	#for n in 31: #range(32):
-	n=31
-	config = np.binary_repr(n, width=5)
-	print('Running FSM configuration ',config,n)
-	f = open('nlst.txt', 'w')
-	out_file = 'out.txt'
-	with open(namelist) as file:
-		for line in file:
-			f.write(line)
-			if 'config' in line:
-				f.write('  nconfig = '+str(n)+'\n')
-			if 'drive' in line:
-				f.write('  met_file = ' +"'./forcing/"+METEOFILENAME+"'"+'\n')
-			if 'out_file' in line:
-				out_file = line.rsplit()[-1]
-			out_name = out_file.replace('.txt','')
-	f.close()
-
-	
-	#os.system("cp nlst.txt " +FSMPATH)
-	os.system('./FSM < nlst.txt')
-	save_file = FSMPATH + '/output/'+METEOFILENAME+'_'+config+'.txt'
-	os.system('mv '+out_file+' '+save_file)
-		#os.system('rm nlst.txt')
+def plot_map(root, landformfile, maxhs):
+	'''
+	Runs: 
+	Args:
+	'''
+	cmd = ["Rscript" ,"/home/joel/src/topoCLIM/plot_map.R" ,root , landformfile,maxhs]
+	subprocess.check_output(cmd)
 #===============================================================================
 # KODE
 #===============================================================================
@@ -601,7 +595,9 @@ Parallel(n_jobs=int(num_cores))(delayed(met2fsm_parallel)(qfile) for qfile in qf
 meteofiles = tqdm(sorted(glob.glob(root+"/*/fsm/meteo/*F.txt")))
 #meteofiles = tqdm(sorted(glob.glob(root+"/smeteoc6_1D/fsm/meteo/*F.txt")))
 #os.chdir(indir)
-Parallel(n_jobs=int(num_cores))(delayed(fsm_sim)(meteofile,namelist,fsmexepath) for meteofile in meteofiles)
+
+# can 
+Parallel(n_jobs=int(1))(delayed(fsm_sim)(meteofile,namelist,fsmexepath) for meteofile in meteofiles)
 
 # At present a simple fixed output format is used. The output text file has 10 columns:
 
@@ -620,130 +616,133 @@ Parallel(n_jobs=int(num_cores))(delayed(fsm_sim)(meteofile,namelist,fsmexepath) 
 	
 # map
 spatialfsm(root)
-	
+plot_map(root, "/home/joel/sim/qmap/GR_data/sim/g3/landform.tif", str(1.5))	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # x5 compression 50GB -> 10GB
 #findCompress(root + "/**/meteo")  
 #findDelete(root+"/**/meteo", dir=True)
 
-def plot_fsm(file, col):
-	df =pd.read_csv(file, delim_whitespace=True, parse_dates=[[0,1,2]], header=None) 
-	df.set_index(df.iloc[:,0], inplace=True)  
-	df.drop(df.columns[[0]], axis=1, inplace=True )  
-	swe=df.iloc[:,col]
-	plot(swe)
+# def plot_fsm(file, col):
+# 	df =pd.read_csv(file, delim_whitespace=True, parse_dates=[[0,1,2]], header=None) 
+# 	df.set_index(df.iloc[:,0], inplace=True)  
+# 	df.drop(df.columns[[0]], axis=1, inplace=True )  
+# 	swe=df.iloc[:,col]
+# 	plot(swe)
 
 
-def experiments():
+# def experiments():
 
-	file="/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/out.txt"  
-	file="/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/CNRM-CERFACS-CNRM-CM5_SMHI-RCA4_HIST_F.txt"
+# 	file="/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/out.txt"  
+# 	file="/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/CNRM-CERFACS-CNRM-CM5_SMHI-RCA4_HIST_F.txt"
 
-	file="/home/joel/sim/qmap/GR_data/sim/g3/out/FSM/fsm001.txt_00.txt"
-
-
-	file="/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/out.txt" 
+# 	file="/home/joel/sim/qmap/GR_data/sim/g3/out/FSM/fsm001.txt_00.txt"
 
 
-	fsmfiles = (sorted(glob.glob(root+"/*/fsm/output/*11111.txt")))
-
-	root="//home/joel/sim/qmap/GR_data/sim/g3/out/FSM_config31/"
-	fsmfiles = (sorted(glob.glob(root+"/fsm*")))
+# 	file="/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/out.txt" 
 
 
-	fsmfiles = (sorted(glob.glob(root+"/*/fsm/output/*11111.txt")))
-	col=2
-	from matplotlib.backends.backend_pdf import PdfPages
-	with PdfPages(root+'/tclim_plots.pdf') as pdf:
-		for f in fsmfiles:
-			print(f)
-			try:
-				df =pd.read_csv(f, delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
-			except:
-				continue 
-			df.set_index(df.iloc[:,0], inplace=True)  
-			df.drop(df.columns[[0]], axis=1, inplace=True )  
-			swe=df.iloc[:,col]
-			try:
-				swe.plot(title="ID:"+ f  )
-			except:
-				continue
-			#plt.xlim(pd.Timestamp('1979-01-01'), pd.Timestamp('1980-01-01'))
-			#plt.show() 
-			pdf.savefig()  # saves the current figure into a pdf page
-			plt.close()
+# 	fsmfiles = (sorted(glob.glob(root+"/*/fsm/output/*11111.txt")))
+
+# 	root="//home/joel/sim/qmap/GR_data/sim/g3/out/FSM_config31/"
+# 	fsmfiles = (sorted(glob.glob(root+"/fsm*")))
 
 
 
-	file = '/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/CNRM-CERFACS-CNRM-CM5_CLMcom-CCLM5-0-6_HIST_Q.txt' 
-	q1 =pd.read_csv(file, parse_dates=True)
-
-	file="/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/CNRM-CERFACS-CNRM-CM5_CLMcom-CCLM5-0-6_HIST_Q_H.txt"
-	hr1 =pd.read_csv(file, parse_dates=True)
-	file="/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/CNRM-CERFACS-CNRM-CM5_CLMcom-CCLM5-0-6_HIST_Q_HOURLY.txt"
-	hr2 =pd.read_csv(file, parse_dates=True)
 
 
-	file= "/home/joel/sim/qmap/GR_data/forcing/fsm006.txt"
-	era5 =pd.read_csv(file, delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
 
-	# to tes
-	filestotest = glob.glob("/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/meteo/*_F.txt")
+# 	file = '/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/CNRM-CERFACS-CNRM-CM5_CLMcom-CCLM5-0-6_HIST_Q.txt' 
+# 	q1 =pd.read_csv(file, parse_dates=True)
 
-	for f in filestotest:
-		clim =pd.read_csv(f,delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
-		print(clim.iloc[:,6].mean()  )
-
-
-	plot(era5.iloc[:,2], clim.iloc[:,2])
-
-	era5.iloc[:,6].plot()
-	clim.iloc[:,2].plot()
-	plt.show()
-
-	plt.scatter(era5.iloc[:,6] , clim.iloc[:,2])
+# 	file="/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/CNRM-CERFACS-CNRM-CM5_CLMcom-CCLM5-0-6_HIST_Q_H.txt"
+# 	hr1 =pd.read_csv(file, parse_dates=True)
+# 	file="/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/CNRM-CERFACS-CNRM-CM5_CLMcom-CCLM5-0-6_HIST_Q_HOURLY.txt"
+# 	hr2 =pd.read_csv(file, parse_dates=True)
 
 
-	# configs are good 00 and 31 more or less the same
+# 	file= "/home/joel/sim/qmap/GR_data/forcing/fsm006.txt"
+# 	era5 =pd.read_csv(file, delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
 
-	# test all forcings
-	col=9
-	file="/home/joel/sim/qmap/GR_data/forcing/fsm006.txt"
-	df =pd.read_csv(file, delim_whitespace=True, parse_dates=[[0,1,2,3]], header=None)
-	df.set_index(df.iloc[:,0], inplace=True)  
-	df.drop(df.columns[[0]], axis=1, inplace=True )
-	era51h =df.resample('1H').interpolate()
-	print(era5.iloc[:,col].mean()  )
+# 	# to tes
+# 	filestotest = glob.glob("/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/meteo/*_F.txt")
 
-
-	filestotest = glob.glob("/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/meteo/*HIST_F.txt")
-
-	climmean=[]
-	for f in filestotest:
-		clim =pd.read_csv(f,delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
-		climmean.append(clim.iloc[:,col].mean() )
-	print(np.mean(climmean  ))
-
-	col=6
-	filestotest = (sorted(glob.glob(root+"/smeteoc6_1D/fsm/output/*11111.txt")))
-	for f in filestotest:
-		df =pd.read_csv(f,delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
-		df.set_index(df.iloc[:,0], inplace=True)  
-		df.drop(df.columns[[0]], axis=1, inplace=True )  
-		swe=df.iloc[:,2]
-		swe.plot(title="ID:"+ f  )
-		plt.show()
+# 	for f in filestotest:
+# 		clim =pd.read_csv(f,delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
+# 		print(clim.iloc[:,6].mean()  )
 
 
-	# tests show sw is half and ta has -3deg bias, by simple bias correction results are much better - what is wrong with qmap /diaagg?
-	# now test how daily data looks	
+# 	plot(era5.iloc[:,2], clim.iloc[:,2])
+
+# 	era5.iloc[:,6].plot()
+# 	clim.iloc[:,2].plot()
+# 	plt.show()
+
+# 	plt.scatter(era5.iloc[:,6] , clim.iloc[:,2])
 
 
-	file = '/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/CNRM-CERFACS-CNRM-CM5_CLMcom-CCLM5-0-6_HIST_Q.txt' 
-	q1 =pd.read_csv(file, parse_dates=True)
-	file="/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/CNRM-CERFACS-CNRM-CM5_CLMcom-CCLM5-0-6_HIST_Q_H.txt"
-	hr1 =pd.read_csv(file, parse_dates=True)
-	file= "/home/joel/sim/qmap/GR_data/forcing/fsm006.txt"
-	era5 =pd.read_csv(file, delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
+# 	# configs are good 00 and 31 more or less the same
+
+# 	# test all forcings
+# 	col=9
+# 	file="/home/joel/sim/qmap/GR_data/forcing/fsm006.txt"
+# 	df =pd.read_csv(file, delim_whitespace=True, parse_dates=[[0,1,2,3]], header=None)
+# 	df.set_index(df.iloc[:,0], inplace=True)  
+# 	df.drop(df.columns[[0]], axis=1, inplace=True )
+# 	era51h =df.resample('1H').interpolate()
+# 	print(era5.iloc[:,col].mean()  )
+
+
+# 	filestotest = glob.glob("/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/meteo/*HIST_F.txt")
+
+# 	climmean=[]
+# 	for f in filestotest:
+# 		clim =pd.read_csv(f,delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
+# 		climmean.append(clim.iloc[:,col].mean() )
+# 	print(np.mean(climmean  ))
+
+# 	col=6
+# 	filestotest = (sorted(glob.glob(root+"/smeteoc6_1D/fsm/output/*11111.txt")))
+# 	for f in filestotest:
+# 		df =pd.read_csv(f,delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
+# 		df.set_index(df.iloc[:,0], inplace=True)  
+# 		df.drop(df.columns[[0]], axis=1, inplace=True )  
+# 		swe=df.iloc[:,2]
+# 		swe.plot(title="ID:"+ f  )
+# 		plt.show()
+
+
+# 	# tests show sw is half and ta has -3deg bias, by simple bias correction results are much better - what is wrong with qmap /diaagg?
+# 	# now test how daily data looks	
+
+
+# 	file = '/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/CNRM-CERFACS-CNRM-CM5_CLMcom-CCLM5-0-6_HIST_Q.txt' 
+# 	q1 =pd.read_csv(file, parse_dates=True)
+# 	file="/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc6_1D/fsm/CNRM-CERFACS-CNRM-CM5_CLMcom-CCLM5-0-6_HIST_Q_H.txt"
+# 	hr1 =pd.read_csv(file, parse_dates=True)
+# 	file= "/home/joel/sim/qmap/GR_data/forcing/fsm006.txt"
+# 	era5 =pd.read_csv(file, delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
 
 
 # In [78]: q1.ISWR.mean()                                                                                                                                                             

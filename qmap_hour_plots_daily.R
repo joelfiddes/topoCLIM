@@ -6,8 +6,6 @@ require(ncdf4)
 #require(wesanderson)
 
 # Args:
-	
-
 	# indir="/home/joel/sim/qmap/topoclim_test" 
 
 args = commandArgs(trailingOnly=TRUE)
