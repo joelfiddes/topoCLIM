@@ -9,6 +9,7 @@ domain='EUR-44'
 time_frequency='day' #3hr' #
 ts_dir=outdir+"aresult/"
 era5spatialRef = "/home/joel/sim/qmap/GR_data/spatial/idPoly.shp"
+era5spatialRef = "/home/joel/sim/qmap/ch_tmapp2/spatial/idPoly.shp"
 
 # define domain here based on era5 domain
 era5ref = gpd.read_file(era5spatialRef).total_bounds 
@@ -16,7 +17,7 @@ lonE = era5ref[2] #int(5)
 lonW = era5ref[0] #int(11)
 latS = era5ref[1]#int(45)
 latN = era5ref[3]#int(48)
-res=0.25 # output grid resolution in degrees
+res=0.7 # output grid resolution in degrees
 
 # define and construct coords config for remapbil which  describes reprojection
 coordsPath = outdir+ "coords.txt"

@@ -4,17 +4,18 @@ import glob
 import numpy as np
 cal_period = slice('2000-01-01', '2015-12-31')
 
-def main(daily_cordex,hourly_obs, mylon, mylat,mytz):
+def main(daily_cordex,hourly_obs, mylon, mylat,mytz, slope):
 
 	print(mytz)
 	df_obs= pd.read_csv(hourly_obs, index_col=0, parse_dates=True)
-	data_obs_hourly = df_obs.loc[:,('TA','PINT', 'RH', 'ISWR','ILWR', 'VW')]
-	data_obs_hourly.rename(columns={'TA': 'temp', 'PINT': 'precip', 'RH': 'hum', 
+	data_obs_hourly = df_obs.loc[:,('TA', 'RH', 'ISWR','ILWR', 'VW')]
+	data_obs_hourly.rename(columns={'TA': 'temp',  'RH': 'hum', 
 		'ISWR': 'glob', 'ILWR': 'ilwr', 'VW': 'wind'}, inplace=True)
 
 	# unit conversions
-	data_obs_hourly.precip *=(1/3600.)#mm/hr to to kgm-2s-1 
-	data_obs_hourly.hum *=100. # 0-1 to 0-100
+	data_obs_hourly['precip'] =df_obs.Rf + df_obs.Sf#mm/hr to to kgm-2s-1 
+	#data_obs_hourly.hum *=100. # 0-1 to 0-100
+
 
 	"""Aggregates data (hourly to daily values) according to the characteristics
 	of each variable (e.g., average for temperature, sum for precipitation)"""
@@ -64,7 +65,7 @@ def main(daily_cordex,hourly_obs, mylon, mylat,mytz):
 	station.disaggregate_precipitation(method='equal')
 
 	# make wind direction equal each hour
-	station.data_disagg['DW'] = df_cordex.DW.resample('H').mean().interpolate(method='pad') 
+	#station.data_disagg['DW'] = df_cordex.DW.resample('H').mean().interpolate(method='pad') 
 	
 	# FIll  last values that go to NA in interp
 	# foward fill step -1
@@ -83,27 +84,81 @@ def main(daily_cordex,hourly_obs, mylon, mylat,mytz):
 #	station.data_disagg['ILWR'][-1] =station.data_disagg['ILWR'][-2] 
 	#plot(data_obs_hourly.ilwr,station.data_disagg.ILWR)
 
-	outname=daily_cordex.split('.txt')[0]+  '_H.txt' 
-	dates=station.data_disagg.temp.index  
+	# partition prate to rain snow (mm/hr)	
+	lowthresh=272.15
+	highthresh = 274.15
+	d = {'prate': station.data_disagg.precip, 'ta': station.data_disagg.temp}
+	df = pd.DataFrame(data=d)
+	snow = df.prate.where(df.ta<lowthresh) 
+	rain=df.prate.where(df.ta>=highthresh) 
+
+	mix1S = df.prate.where((df.ta >= lowthresh) & (df.ta<=highthresh), inplace = False)
+	mix1T = df.ta.where((df.ta >= lowthresh) & (df.ta<=highthresh), inplace = False)
+	mixSno=(highthresh - mix1T) / (highthresh-lowthresh)
+	mixRain=1-mixSno
+	addSnow=mix1S*mixSno
+	addRain=mix1S*mixRain
+
+	# nas to 0
+	snow[np.isnan(snow)] = 0 	
+	rain[np.isnan(rain)] = 0 
+	addRain[np.isnan(addRain)] = 0 
+	addSnow[np.isnan(addSnow)] = 0 
+
+	# # linearly reduce snow to zero in steep slopes
+	#if steepSnowReduce=="TRUE": # make this an option if need that in future
+
+	snowSMIN=30.
+	snowSMAX=80.
+	slope=slope
+
+	k= (snowSMAX-slope)/(snowSMAX - snowSMIN)
+
+	if slope<snowSMIN:
+		k=1
+	if slope>snowSMAX:
+		k=0
+
+	snowTot=(snow+addSnow) * k
+	rainTot=rain + addRain
+
+
+
+	#Filter TA for absolute 0 vals - still need this?
+	station.data_disagg.temp[station.data_disagg.temp<220]=np.nan
+	station.data_disagg.temp = station.data_disagg.temp.ffill()
+	station.data_disagg.P[station.data_disagg.P<10000]=np.nan
+	station.data_disagg.P = station.data_disagg.P.ffill()
+	station.data_disagg.ILWR[station.data_disagg.ILWR<100]=np.nan
+	station.data_disagg.ILWR = station.data_disagg.ILWR.ffill()
+	station.data_disagg.hum[station.data_disagg.hum<5]=np.nan
+	station.data_disagg.hum = station.data_disagg.hum.ffill()
+
+	outname=daily_cordex.split('.txt')[0]+  '_F.txt' 
+	dates=station.data_disagg.temp.index 
+
 	df_fsm= pd.DataFrame({	
 
-					
-					# "Sf":snowTot/(60.*60.), # prate in mm/hr to kgm2/s
-					# "Rf":rainTot/(60.*60.), # prate in mm/hr to kgm2/s
+	 				"year": dates.year, 
+	 				"month": dates.month, 
+					"day": dates.day, 
+					"hour": dates.hour,
+					"ISWR":station.data_disagg.glob, 
+					"ILWR":station.data_disagg.ILWR, 
+					"Sf":snowTot/3600, # prate in mm/hr to kgm2/s
+					"Rf":rainTot/3600, # prate in mm/hr to kgm2/s
 					"TA":station.data_disagg.temp, 
 					"RH":station.data_disagg.hum,#*0.01, #meteoio 0-1
 					"VW":station.data_disagg.wind,
-					"DW":station.data_disagg.DW, 
 					"P":station.data_disagg.P,
-					"ISWR":station.data_disagg.glob, 
-					"ILWR":station.data_disagg.ILWR, 
-					"PINT":station.data_disagg.precip # prate mm/hr
-
+					
 					})
 	df_fsm.index.name="Date"
 	dffsm = df_fsm.ffill() # ensure last day of nans (DW,ILWR,P) is filled with last known values (same as other variables, they are just done at the daily level already)
-	dffsm.to_csv(path_or_buf=outname ,na_rep=-999,float_format='%.8f', header=True, sep=',', 
-		columns=['TA', 'RH', 'VW', 'DW', 'P', 'ISWR', 'ILWR','PINT'])
+	
+	#dffsm_3h = dffsm.resample("3H").mean() #dont need know we do inline processing
+	dffsm.to_csv(path_or_buf=outname ,na_rep=-999,float_format='%.4f', header=False, sep='\t', index=False, 
+		columns=['year','month','day', 'hour', 'ISWR', 'ILWR', 'Sf', 'Rf', 'TA', 'RH', 'VW', 'P'])
 	print("WRITTEN: "+ outname)
 
 

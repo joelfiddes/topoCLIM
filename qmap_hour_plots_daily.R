@@ -4,7 +4,7 @@ require(ncdf4)
 ##require(pracma)
 #require(hydroGOF)
 #require(wesanderson)
-
+# Major rework: 12 Oct 2020
 # Args:
 	# indir="/home/joel/sim/qmap/topoclim_test" 
 
@@ -34,7 +34,7 @@ outdir=paste0(indir,"/aqmap_results/")
 dir.create(outdir)
 
 # dissaggregated calender corrected hourly input files 
-files = list.files(path="/home/joel/sim/qmap/raw_cordex/aresult", pattern="SCAL.nc", recursive=T, full.name=T)
+files = list.files(path="/home/joel/sim/qmap/raw_cordex/aresult", pattern="SCAL.nc", recursive=F, full.name=T)
 hist_files = files[ grep('historical',files)]
 rcp26_files = files[ grep('rcp26',files)]
 rcp85_files = files[ grep('rcp85',files)]
@@ -52,8 +52,8 @@ startDateRcp85 = "2006-01-02"
 endDateRcp85 = "2099-12-31"
 
 # the period to do quantile mapping over (obs and sim must overlap!)
-startDateQmap = "1990-01-01"
-endDateQmap = "1999-12-31"
+startDateQmap = "1980-01-01"
+endDateQmap = "2004-12-31"
 
 
 
@@ -62,38 +62,47 @@ endDateQmap = "1999-12-31"
 # Obs Era5 data downscaled by toposcale, can be resampled
 
 obs=read.csv(daily_obs)
-myvars=c('tas', 'tasmin', 'tasmax','pr', 'ps', 'hurs', 'rsds','rlds', 'uas', 'vas')
+myvars=c('tas', 'tasmin', 'tasmax','pr', 'ps', 'hurs', 'rsds','rlds', 'uas')
+
+OItas = which(names(obs)=='TA')
+OItasmin = which(names(obs)=='TAMIN')
+OItasmax = which(names(obs)=='TAMAX')
+OISf = which(names(obs)=='Sf')
+OIRf = which(names(obs)=='Rf')
+OIp = which(names(obs)=='P')
+OIrh = which(names(obs)=='RH')
+OIiswr = which(names(obs)=='ISWR')
+OIilwr = which(names(obs)=='ILWR')
+OIvw = which(names(obs)=='VW')
+
+
+# names(obs)
+#  [1] "datetime" "ISWR"     "ILWR"     "Sf"       "Rf"       "TA"      
+#  [7] "RH"       "VW"       "P"        "TAMAX"    "TAMIN" 
 
 for (var in myvars){
 print(var)
 
 
 
-	if(var=="tas"){obsindex <-11; convFact <-1} # K
-	if(var=="tasmin"){obsindex <-14; convFact <-1} # K
-	if(var=="tasmax"){obsindex <-13; convFact <-1} # K
-		if(var=="pr"){obsindex <-6; convFact <-(1/3600)} # kgm-2s-1 obs are in mean mm/hr for that day convert to mm/s (cordex)
-			if(var=="ps"){obsindex <-5; convFact <-1}# Pa
-				if(var=="hurs"){obsindex <-8; convFact <-100} # % 0-100
-					if(var=="rsds"){obsindex <-4; convFact <-1}	# Wm-2
-						if(var=="rlds"){obsindex <-3; convFact <-1}# Wm-2
-							if(var=="uas"){obsindex <-2; convFact <-1}# ms-1
-								if(var=="vas"){obsindex <-2; convFact <-1}# ms-1
+	if(var=="tas"){obsindex <-OItas; convFact <-1} # K
+	if(var=="tasmin"){obsindex <-OItasmax; convFact <-1} # K
+	if(var=="tasmax"){obsindex <-OItasmin; convFact <-1} # K
+		if(var=="pr"){obsindex <-OISf; convFact <-(1)} # both FSm and cordex are kgm-2s-1 
+			if(var=="ps"){obsindex <-OIp; convFact <-1}# Pa
+				if(var=="hurs"){obsindex <-OIrh; convFact <-1} # % 0-100
+					if(var=="rsds"){obsindex <-OIiswr; convFact <-1}	# Wm-2
+						if(var=="rlds"){obsindex <-OIilwr; convFact <-1}# Wm-2
+							if(var=="uas"){obsindex <-OIvw; convFact <-1}# ms-1
+
 
 	# read and convert obs unit
 	obs_var=obs[,obsindex]*convFact	
-
-		# compute u and v here
-	if(var=="uas"){
-	ws <- obs$VW
-	wd <- obs$DW
-	    obs_var = ws * cos(wd)
-	  }
-	    if(var=="vas"){
-	    ws <- obs$VW
-		wd <- obs$DW
-    	obs_var = ws * sin(wd)
-    }
+	
+	# if pr need to add obs Sf amnd Rf components
+	if (var=='pr'){
+	obs_var=(obs[,OIRf]+obs[,OISf])*convFact	
+	}
 
 	# aggregate obs to daily resolution
 	obs_datetime= strptime(obs$datetime,format="%Y-%m-%d")
@@ -122,6 +131,7 @@ print(var)
 	# check if done
 	
 
+
 		print(hist_file)
 		modelNameBase = unlist(strsplit(hist_file,'/'))[length(unlist(strsplit(hist_file,'/')))]
 		GCM = unlist(strsplit(modelNameBase,'_historical'))[1]
@@ -132,7 +142,9 @@ print(var)
 		# get data READ netcdf
 
 		nc=nc_open(hist_file)
-		tas_allgrids =ncvar_get(nc, var) 
+		tas_allgrids =ncvar_get(nc, var)
+
+
 		lon =ncvar_get(nc, 'lon')
 		lat =ncvar_get(nc, 'lat')
 		time =ncvar_get(nc, 'time')
@@ -141,6 +153,17 @@ print(var)
 
 		# extract timeseries corresponding to qmap (all)
 		tas = tas_allgrids[myx,myy,]
+
+		# wspeed compute from u and v here
+		if(var=="uas"){
+			vas_allgrids =ncvar_get(nc, 'vas')
+			vas = tas_allgrids[myx,myy,]
+			tas = sqrt(tas^2 + vas^2)
+		  	}
+
+
+
+
 
 		# define time
 		time = ncvar_get( nc,'time')
@@ -270,6 +293,13 @@ print(var)
 		# extract timeseries corresponding to qmap (all)
 		tas = tas_allgrids[myx,myy,]
 
+		# wspeed compute from u and v here
+		if(var=="uas"){
+			vas_allgrids =ncvar_get(nc, 'vas')
+			vas = tas_allgrids[myx,myy,]
+			tas = sqrt(tas^2 + vas^2)
+		  	}
+
 		# define time
 		time = ncvar_get( nc,'time')
 		time2=time
@@ -371,6 +401,13 @@ print(var)
 		# extract timeseries corresponding to qmap (all)
 		tas = tas_allgrids[myx,myy,]
 
+		# wspeed compute from u and v here
+		if(var=="uas"){
+			vas_allgrids =ncvar_get(nc, 'vas')
+			vas = tas_allgrids[myx,myy,]
+			tas = sqrt(tas^2 + vas^2)
+		  	}
+
 		# define time
 		time = ncvar_get( nc,'time')
 		time2=time
@@ -456,160 +493,3 @@ print(var)
 						# "VW":station.data_disagg.wind,
 						# "P":station.data_disagg.P,
 
-fsmdir=paste0(indir,"/fsm/")
-dir.create(fsmdir)
-
-results1 = list.files(path = paste0(indir,"/aqmap_results/"),full.names=T )
-results = results1[ grep('_qmap_',results1)]
-
-print(results)
-hist = results[grep("hist",results)]
-rcp26 = results[grep("rcp26",results)]
-rcp85 = results[grep("rcp85",results)]
-
-#DW
-
-typ='HIST'
-load(hist[1] )
-RH<-df
-load(hist[2] )
-PINT<-df
-load(hist[3] )
-P<-df
-load(hist[4] )
-ILWR<-df
-load(hist[5] )
-ISWR<-df
-load(hist[6] )
-TA<-df
-load(hist[7] )
-TAMAX<-df
-load(hist[8] )
-TAMIN<-df
-load(hist[9] )
-uas<-df[1:length(names(df))-1]
-load(hist[10] )
-vas<-df[1:length(names(df))-1]
-
-DW = (180 / pi) * atan(uas/vas) + ifelse(vas>0,180,ifelse(uas>0,360,0))
-VW = sqrt(uas^2+vas^2)
-
-models = names(df)[1:length(names(df))-1]
-dates = df[length(df)]
-for (model in models){
-	print(model)
-	modellist=list()
-	modellist['datetime'] <- dates
-	modellist['DW']<- DW[model]
-	modellist['ILWR']<- ILWR[model]
-	modellist['ISWR']<- ISWR[model] # qmap can make non-zero night time rad which is unphysical
-	modellist['P']<- P[model]
-	modellist['PINT']<- PINT[model]
-	modellist['RH']<- RH[model]
-	modellist['TA']<- TA[model]
-	modellist['VW']<- VW[model]
-	modellist['TAMIN']<- TAMIN[model]
-	modellist['TAMAX']<- TAMAX[model]
-	df = as.data.frame(modellist)
-	df[c(2:5, 7:11)] =round(df[c(2:5, 7:11)],1)
-	df[6 ] = round(df[c(6)],6)
-	write.csv(df, paste0(fsmdir, model, "_",typ,"_Q.txt"), row.names=FALSE)
-	
-}
-
-
-typ='RCP26'
-load(rcp26[1] )
-RH<-df
-load(rcp26[2] )
-PINT<-df
-load(rcp26[3] )
-P<-df
-load(rcp26[4] )
-ILWR<-df
-load(rcp26[5] )
-ISWR<-df
-load(rcp26[6] )
-TA<-df
-load(rcp26[7] )
-TAMAX<-df
-load(rcp26[8] )
-TAMIN<-df
-load(rcp26[9] )
-uas<-df[1:length(names(df))-1]
-load(rcp26[10] )
-vas<-df[1:length(names(df))-1]
-
-DW = (180 / pi) * atan(uas/vas) + ifelse(vas>0,180,ifelse(uas>0,360,0))
-VW = sqrt(uas^2+vas^2)
-
-models = names(df)[1:length(names(df))-1]
-dates = df[length(df)]
-for (model in models){
-	print(model)
-	modellist=list()
-	modellist['datetime'] <- dates
-	modellist['DW']<- DW[model]
-	modellist['ILWR']<- ILWR[model]
-	modellist['ISWR']<- ISWR[model] # qmap can make non-zero night time rad which is unphysical
-	modellist['P']<- P[model]
-	modellist['PINT']<- PINT[model]
-	modellist['RH']<- RH[model]
-	modellist['TA']<- TA[model]
-	modellist['VW']<- VW[model]
-	modellist['TAMIN']<- TAMIN[model]
-	modellist['TAMAX']<- TAMAX[model]
-	df = as.data.frame(modellist)
-	df[c(2:5, 7:11)] =round(df[c(2:5, 7:11)],1)
-	df[6 ] = round(df[c(6)],6)
-	write.csv(df, paste0(fsmdir, model, "_",typ,"_Q.txt"), row.names=FALSE)
-	
-}
-
-typ='RCP85'
-load(rcp85[1] )
-RH<-df
-load(rcp85[2] )
-PINT<-df
-load(rcp85[3] )
-P<-df
-load(rcp85[4] )
-ILWR<-df
-load(rcp85[5] )
-ISWR<-df
-load(rcp85[6] )
-TA<-df
-load(rcp85[7] )
-TAMAX<-df
-load(rcp85[8] )
-TAMIN<-df
-load(rcp85[9] )
-uas<-df[1:length(names(df))-1]
-load(rcp85[10] )
-vas<-df[1:length(names(df))-1]
-
-DW = (180 / pi) * atan(uas/vas) + ifelse(vas>0,180,ifelse(uas>0,360,0))
-VW = sqrt(uas^2+vas^2)
-
-models = names(df)[1:length(names(df))-1]
-dates = df[length(df)]
-for (model in models){
-	print(model)
-	modellist=list()
-	modellist['datetime'] <- dates
-	modellist['DW']<- DW[model]
-	modellist['ILWR']<- ILWR[model]
-	modellist['ISWR']<- ISWR[model] # qmap can make non-zero night time rad which is unphysical
-	modellist['P']<- P[model]
-	modellist['PINT']<- PINT[model]
-	modellist['RH']<- RH[model]
-	modellist['TA']<- TA[model]
-	modellist['VW']<- VW[model]
-	modellist['TAMIN']<- TAMIN[model]
-	modellist['TAMAX']<- TAMAX[model]
-	df = as.data.frame(modellist)
-	df[c(2:5, 7:11)] =round(df[c(2:5, 7:11)],1)
-	df[6 ] = round(df[c(6)],6)
-	write.csv(df, paste0(fsmdir, model, "_",typ,"_Q.txt"), row.names=FALSE)
-	
-}

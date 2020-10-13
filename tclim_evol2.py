@@ -31,25 +31,25 @@ import matplotlib
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 
-grid= sys.argv[1]
-num_cores=sys.argv[2]
+#grid= sys.argv[1]
+num_cores=sys.argv[1]
 #===============================================================================
 # INPUT
 #===============================================================================
 wd = "/home/joel/sim/qmap"
-
+#grid='g11'
 raw_dir= wd+'/raw_cordex/'
 nc_standard_clim=raw_dir+'/aresult/standard/ICHEC-EC-EARTH_rcp85_r12i1p1_CLMcom-CCLM5-0-6_v1__TS.nc_TS_ALL_ll.nc'
 nc_standard_hist=raw_dir+'/aresult/standard/ICHEC-EC-EARTH_historical_r12i1p1_KNMI-RACMO22E_v1__TS.nc_TS_ALL_ll.nc'
-tscale_sim_dir = wd+ "/GR_data/sim/"+grid +"/"
+#tscale_sim_dir = wd+ "/GR_data/sim/"+grid +"/"
+tscale_sim_dir = wd+ "/ch_tmapp2/"
 
 
-
-root = '/home/joel/sim/qmap/topoclim_test_hpc/'+ grid + "/"
+#root = '/home/joel/sim/qmap/topoclim_test_hpc/'+ grid + "/"
+root = '/home/joel/sim/qmap/topoclim_ch/'
 namelist="/home/joel/sim/qmap/topoclim/fsm/nlst_qmap.txt"
-indir = root.split('/g')[0]
-
-fsmexepath = "/home/joel/src/topoCLIM/FSM"
+srcdir="/home/joel/src/topoCLIM/"
+fsmexepath = srcdir+"FSM"
 
 #===============================================================================
 # METHODS
@@ -162,23 +162,41 @@ def calendarNinja(nc, nc_standard_hist,nc_standard_clim):
 def resamp_1D(path_inpt, freq='1D'):# create 1h wfj era5 obs data by
 
 	# freq = '1H' or '1D'
-	df_obs= pd.read_csv(path_inpt, index_col=0, parse_dates=True)
-	df_1d = df_obs.resample(freq).mean()
-	TAMIN = df_obs['TA'].resample(freq).min()
-	TAMAX = df_obs['TA'].resample(freq).max()
+	# converts fsm format to one used by the code
+	
+	df =pd.read_csv(path_inpt, delim_whitespace=True, 
+	header=None, index_col='datetime', 
+                 parse_dates={'datetime': [0,1,2,3]}, 
+                 date_parser=lambda x: pd.datetime.strptime(x, '%Y %m %d %H') )
+
+
+	df_1d = df.resample(freq).mean()
+
+	TAMIN = df_1d.iloc[:,4]  .resample(freq).min()
+	TAMAX = df_1d.iloc[:,4]  .resample(freq).max()
 	df_1d['TAMAX']  =TAMAX
 	df_1d['TAMIN']  =TAMIN
-	df_1d.to_csv(path_or_buf=path_inpt.split('.')[0]  + '_'+freq+'.csv' ,na_rep=-999,float_format='%.3f', header=True, sep=',')
+	df_1d.to_csv(path_or_buf=path_inpt.split('.')[0]  + '_'+freq+'.csv' ,na_rep=-999,float_format='%.6f', 
+		header=['ISWR', 'ILWR', 'Sf', 'Rf', 'TA', 'RH', 'VW', 'P','TAMAX','TAMIN'], sep=',')
 	return(path_inpt.split('.')[0]  + '_'+freq+'.csv')
+
+
 
 
 def resamp_1H(path_inpt, freq='1H'):# create 1h wfj era5 obs data by
 
 	# freq = '1H' or '1D'
-	df_obs= pd.read_csv(path_inpt, index_col=0, parse_dates=True)
-	df_1d = df_obs.resample(freq).interpolate()
-	df_1d.to_csv(path_or_buf=path_inpt.split('.')[0]  + '_'+freq+'.csv' ,na_rep=-999,float_format='%.3f', header=True, sep=',')
+	df =pd.read_csv(path_inpt, delim_whitespace=True, 
+	header=None, index_col='datetime', 
+                 parse_dates={'datetime': [0,1,2,3]}, 
+                 date_parser=lambda x: pd.datetime.strptime(x, '%Y %m %d %H') )
+
+
+	df_1h = df.resample(freq).interpolate()
+	df_1h.to_csv(path_or_buf=path_inpt.split('.')[0]  + '_'+freq+'.csv' ,na_rep=-999,float_format='%.6f', 
+		header=['ISWR', 'ILWR', 'Sf', 'Rf', 'TA', 'RH', 'VW', 'P'], sep=',')
 	return(path_inpt.split('.')[0]  + '_'+freq+'.csv')
+
 
 
 def run_qmap(path_inpt):
@@ -437,7 +455,89 @@ def plot(obs):
     plt.legend()
     plt.show()
 
-def tclim_main(tscale_file):
+def fsm_sim(meteofile, namelist, fsmexepath):
+	# fsm executable must exist in indir
+	#print(meteofile)
+	# constraint is that Fortran struggles with long strings 
+	# such as an absolute filepath, thats why need to do awkrawd stuff to make sure relative path works
+	METEOFILENAME = os.path.split(meteofile)[1]
+	METEOFILEPATH = os.path.split(meteofile)[0]
+	FSMPATH = os.path.split(METEOFILEPATH)[0] 
+	if not os.path.exists(METEOFILEPATH+"/FSM"): 
+		os.system("cp "+fsmexepath +" " +METEOFILEPATH)
+	os.chdir(METEOFILEPATH)
+	try:
+		os.mkdir(FSMPATH+'/output')
+	except:
+		pass
+
+
+	#for n in 31: #range(32):
+	n=31
+	config = np.binary_repr(n, width=5)
+	#print('Running FSM configuration ',config,n)
+	f = open('nlst_'+METEOFILENAME+'.txt', 'w')
+	out_file = 'out_'+METEOFILENAME+'.txt'
+
+	with open(namelist) as file:
+		for line in file:
+			f.write(line)
+			if 'config' in line:
+				f.write('  nconfig = '+str(n)+'\n')
+			if 'drive' in line:
+				f.write('  met_file = '+"'"+METEOFILENAME+"'"+'\n')
+			if 'output' in line:
+				f.write('  out_file = '+"'../output/fsm_"+METEOFILENAME+".txt'"+'\n')
+ 		#	f.write(line.replace('out_file', '  out_file = '+"'./fsm_sims/fsm_"+METEOFILENAME+".txt'"+'\n'))
+
+	f.close()
+
+	os.system('./FSM < nlst_'+METEOFILENAME+'.txt')
+	os.remove('nlst_'+METEOFILENAME+'.txt')
+
+# def fsm_sim(meteofile, namelist, fsmexepath):
+# 	# fsm executable must exist in indir
+# 	#print(meteofile)
+
+# 	METEOFILENAME = os.path.split(meteofile)[1]
+# 	METEOFILEPATH = os.path.split(meteofile)[0]
+# 	FSMPATH = os.path.split(METEOFILEPATH)[0] 
+# 	if not os.path.exists(FSMPATH+"/FSM"): 
+# 		os.system("cp "+fsmexepath +" " +FSMPATH)
+# 	os.chdir(FSMPATH)
+# 	try:
+# 		os.mkdir(FSMPATH+'/output')
+# 	except:
+# 		pass
+
+
+# 	#for n in 31: #range(32):
+# 	n=31
+# 	config = np.binary_repr(n, width=5)
+# 	#print('Running FSM configuration ',config,n)
+# 	f = open('nlst.txt', 'w')
+# 	out_file = 'out.txt'
+# 	with open(namelist) as file:
+# 		for line in file:
+# 			f.write(line)
+# 			if 'config' in line:
+# 				f.write('  nconfig = '+str(n)+'\n')
+# 			if 'drive' in line:
+# 				f.write('  met_file = ' +"'./meteo/"+METEOFILENAME+"'"+'\n')
+# 			if 'out_file' in line:
+# 				out_file = line.rsplit()[-1]
+# 			out_name = out_file.replace('.txt','')
+# 	f.close()
+
+	
+# 	#os.system("cp nlst.txt " +FSMPATH)
+# 	os.system('./FSM < nlst.txt')
+# 	save_file = FSMPATH + '/output/'+METEOFILENAME+'_'+config+'.txt'
+# 	os.system('mv '+out_file+' '+save_file)
+# 		#os.system('rm nlst.txt')
+
+
+def tclim_main(tscale_file, mylon, mylat, mytz, slope):
 	print(tscale_file)
 	daily_obs = resamp_1D(tscale_file)
 
@@ -451,11 +551,10 @@ def tclim_main(tscale_file):
 	subprocess.check_output(cmd)
 
 	cmd = ["Rscript", "qmap_plots.R", root ,str(sample),  daily_obs]
-	subprocess.check_output(cmd)
+	#subprocess.check_output(cmd)
 
-	# cleanup _HOURLY.txt
-	# /home/joel/sim/qmap/topoclim_test_hpc/g4/smeteoc1_1D/aqmap_results
-	#findDelete(root+"/**/aqmap_results", dir=True)
+	# cleanup
+	findDelete(root+"/s"+sample+ "/aqmap_results", dir=True)
 
 	# list all daily qmap files
 	daily_cordex_files = glob.glob(root+"/s"+sample+ "/fsm/*Q.txt")
@@ -463,56 +562,25 @@ def tclim_main(tscale_file):
 	hourly_obs= resamp_1H(tscale_file)
 	# loop over with dissag routine
 	for daily_cordex in daily_cordex_files:
-		tclim_disagg.main(daily_cordex,hourly_obs,  str(mylon), str(mylat), str(mytz))
+		tclim_disagg.main(daily_cordex,hourly_obs,  str(mylon), str(mylat), str(mytz), slope)
 
-def met2fsm_parallel(qfile):
+
+	meteofiles = (sorted(glob.glob(root+"/s"+sample+ "/fsm/*F.txt")))
+
+	for meteofile in meteofiles:
+		fsm_sim(meteofile,namelist,fsmexepath)
+
+	findDelete(root+"/s"+sample+ "/fsm", dir=True)
+	os.chdir(srcdir)
+
+def met2fsm_parallel(qfile,lp):
 
 	''' wrapper to allow joblib paralellistation'''
 	print(qfile)
-	sample = int(qfile.split("smeteoc")[1].split("_")[0])-1
+	sample = int(qfile.split("stscale")[1].split("_1D")[0].split("_")[1])-1
 	slope=lp.slp[sample] 
 	met2fsm(qfile,slope)
 
-def fsm_sim(meteofile, namelist, fsmexepath):
-	# fsm executable must exist in indir
-	#print(meteofile)
-
-	METEOFILENAME = os.path.split(meteofile)[1]
-	METEOFILEPATH = os.path.split(meteofile)[0]
-	FSMPATH = os.path.split(METEOFILEPATH)[0] 
-	if not os.path.exists(FSMPATH+"/FSM"): 
-		os.system("cp "+fsmexepath +" " +FSMPATH)
-	os.chdir(FSMPATH)
-	try:
-		os.mkdir(FSMPATH+'/output')
-	except:
-		pass
-
-
-	#for n in 31: #range(32):
-	n=31
-	config = np.binary_repr(n, width=5)
-	#print('Running FSM configuration ',config,n)
-	f = open('nlst.txt', 'w')
-	out_file = 'out.txt'
-	with open(namelist) as file:
-		for line in file:
-			f.write(line)
-			if 'config' in line:
-				f.write('  nconfig = '+str(n)+'\n')
-			if 'drive' in line:
-				f.write('  met_file = ' +"'./meteo/"+METEOFILENAME+"'"+'\n')
-			if 'out_file' in line:
-				out_file = line.rsplit()[-1]
-			out_name = out_file.replace('.txt','')
-	f.close()
-
-	
-	#os.system("cp nlst.txt " +FSMPATH)
-	os.system('./FSM < nlst.txt')
-	save_file = FSMPATH + '/output/'+METEOFILENAME+'_'+config+'.txt'
-	os.system('mv '+out_file+' '+save_file)
-		#os.system('rm nlst.txt')
 
 
 def plot_hs(fsmfiles):
@@ -530,7 +598,7 @@ def plot_hs(fsmfiles):
 			df.drop(df.columns[[0]], axis=1, inplace=True )  
 			hs=df.iloc[:,col]
 			try:
-				title = f.split(grid)[1].split("_F.txt_11111.txt")[0].split("fsm/output/")
+				title = sample
 				hs.plot(title="ID:"+ title[0]+title[1]  )
 			except:
 				continue
@@ -613,60 +681,52 @@ nc_complete = completeFiles(raw_dir)
 
 #calendarNinja(nc_complete, nc_standard_hist,nc_standard_clim)
 Parallel(n_jobs=int(num_cores))(delayed(calendarNinja)(nc,nc_standard_hist,nc_standard_clim) for nc in nc_complete)
+
 # find all era5 meteo files
-tscale_files = glob.glob(tscale_sim_dir+"/forcing/"+ "meteoc*")
-
-sorted(glob.glob(tscale_sim_dir+"/out/"+ "tscale*")  )
+tscale_files =sorted(glob.glob(tscale_sim_dir+"/out/"+ "tscale*")  )
 
 # clean up old resamples
-for f in glob.glob(tscale_sim_dir+"/forcing/"+ "*1D.csv"):
+for f in glob.glob(tscale_sim_dir+"/out/"+ "*1D.csv"):
 	os.remove(f)
 
 # clean up old resamples
-for f in glob.glob(tscale_sim_dir+"/forcing/"+ "*1H.csv"):
+for f in glob.glob(tscale_sim_dir+"/out/"+ "*1H.csv"):
 	os.remove(f)
-
-
-
-
-
-
-
-
 
 # get grid box
 lp = pd.read_csv(tscale_sim_dir + "/listpoints.txt")
 # this doesnt seem to be era5 grid centres - check
-mylon = lp.lon.mean()#mean(lp.lon) # normally all lon are the same (grid centre), however recent version tsub allows the position to be weight by pixel positions, mean() then gets back to grid centre, BUT needs weighting by sample memberes!
-mylat = lp.lat.mean()
-mytz = int(lp.tz.mean())
+lon = lp.lon#mean(lp.lon) # normally all lon are the same (grid centre), however recent version tsub allows the position to be weight by pixel positions, mean() then gets back to grid centre, BUT needs weighting by sample memberes!
+lat = lp.lat
+tz = lp.tz
 
 # rerun after cleanup
-tscale_files = tqdm(sorted(glob.glob(tscale_sim_dir+"/forcing/"+ "meteoc*")))
-tscale_files = tqdm(sorted(glob.glob(tscale_sim_dir+"/out/"+ "*")))
-Parallel(n_jobs=int(num_cores))(delayed(tclim_main)(tscale_file) for tscale_file in tscale_files)
+tscale_files = sorted(glob.glob(tscale_sim_dir+"/out/"+ "tscale*"))
+Parallel(n_jobs=int(num_cores))(delayed(tclim_main)(tscale_files[i], lon[i], lat[i], tz[i], lp.slp[i]) for i in tqdm(range(len(tscale_files))) )
+
+
+fsmfiles = (sorted(glob.glob(root+"/*/output/*.txt")))
+plot_hs(fsmfiles)
 
 
 
-# cleanup _HOURLY.txt
-#findDelete(root+"/*/fsm/*Q.txt")
 
 
 # converts standard output to FSm or...
-qfiles = tqdm(sorted(glob.glob(root+"/*/fsm/*Q_H.txt")))
+#qfiles = tqdm(sorted(glob.glob(root+"/*/fsm/*Q_H.txt")))
 #qfiles = tqdm(sorted(glob.glob(root+"/smeteoc6_1D/fsm/*Q_H.txt")))
 #for qfile in tqdm(qfiles):
-Parallel(n_jobs=int(num_cores))(delayed(met2fsm_parallel)(qfile) for qfile in qfiles)
+#Parallel(n_jobs=int(num_cores))(delayed(met2fsm_parallel)(qfile,lp) for qfile in qfiles)
 # cleanup _HOURLY.txt
-#findDelete(root+"/*/fsm/*Q_HOURLY.txt")
+#findDelete(root+"/*/fsm/*Q_H.txt")
 
 # Simulate FSm
-meteofiles = tqdm(sorted(glob.glob(root+"/*/fsm/meteo/*F.txt")))
+#meteofiles = tqdm(sorted(glob.glob(root+"/*/fsm/meteo/*F.txt")))
 #meteofiles = tqdm(sorted(glob.glob(root+"/smeteoc6_1D/fsm/meteo/*F.txt")))
 #os.chdir(indir)
 
 # can 
-Parallel(n_jobs=int(1))(delayed(fsm_sim)(meteofile,namelist,fsmexepath) for meteofile in meteofiles)
+#Parallel(n_jobs=int(1))(delayed(fsm_sim)(meteofile,namelist,fsmexepath) for meteofile in meteofiles)
 
 # At present a simple fixed output format is used. The output text file has 10 columns:
 
@@ -684,44 +744,46 @@ Parallel(n_jobs=int(1))(delayed(fsm_sim)(meteofile,namelist,fsmexepath) for mete
 # | Tsl      | &deg;C | Average soil temperature at 20 cm depth  |
 
 
-fsmfiles = (sorted(glob.glob(root+"/*/fsm/output/*11111.txt")))
-plot_hs(fsmfiles)
+
+
+
+
 # map
 
 # max filter = 4 (HS)
 # max filter = 
 
 
-zmax=400
-maxfilter=2000
-var=3
-outname="swe"
-myroot='/home/joel/sim/qmap/topoclim_test_hpc'
-for grid in range(6):
-	print(grid+1)
+# zmax=400
+# maxfilter=2000
+# var=3
+# outname="swe"
+# myroot='/home/joel/sim/qmap/topoclim_test_hpc'
+# for grid in range(6):
+# 	print(grid+1)
 
-	root = '/home/joel/sim/qmap/topoclim_test_hpc/g'+ str(grid +1)
-	tscale_sim_dir = '/home/joel/sim/qmap/GR_data/sim/g' +str(grid +1)
-	spatialfsm(root,var, maxfilter)
-	plot_map(root, tscale_sim_dir+"/landform.tif", str(zmax))	
+# 	root = '/home/joel/sim/qmap/topoclim_test_hpc/g'+ str(grid +1)
+# 	tscale_sim_dir = '/home/joel/sim/qmap/GR_data/sim/g' +str(grid +1)
+# 	spatialfsm(root,var, maxfilter)
+# 	plot_map(root, tscale_sim_dir+"/landform.tif", str(zmax))	
 	
-compile_map(myroot, outname, str(zmax))
+# compile_map(myroot, outname, str(zmax))
 
 
 
-zmax=400
-maxfilter=2000
-var=3
-outname="swe"
-myroot='/home/joel/sim/qmap/GR_data'
+# zmax=400
+# maxfilter=2000
+# var=3
+# outname="swe"
+# myroot='/home/joel/sim/qmap/GR_data'
 
-for grid in range(6):
-	tscale_sim_dir = '/home/joel/sim/qmap/GR_data/sim/g' +str(grid +1)
-	fsm_path='/home/joel/sim/qmap/GR_data/sim/g'+str(grid +1)+'/out/FSM'
-	spatialfsm_era5(fsm_path,var)
-	plot_map_era5(fsm_path, tscale_sim_dir+"/landform.tif", str(zmax))
+# for grid in range(6):
+# 	tscale_sim_dir = '/home/joel/sim/qmap/GR_data/sim/g' +str(grid +1)
+# 	fsm_path='/home/joel/sim/qmap/GR_data/sim/g'+str(grid +1)+'/out/FSM'
+# 	spatialfsm_era5(fsm_path,var)
+# 	plot_map_era5(fsm_path, tscale_sim_dir+"/landform.tif", str(zmax))
 
-compile_map_era5(myroot, outname, str(zmax))
+# compile_map_era5(myroot, outname, str(zmax))
 
 
 
@@ -862,46 +924,46 @@ compile_map_era5(myroot, outname, str(zmax))
 
 #EVALUATION
 
-grid = 'g4'
-sample='5'
-file = "/home/joel/sim/qmap/topoclim_test_hpc/"+grid+"/smeteoc"+sample+"_1D/fsm/ICHEC-EC-EARTH_CLMcom-CCLM5-0-6_HIST_Q.txt" 
-q1 =pd.read_csv(file, parse_dates=True)
-q1 =pd.read_csv(file, parse_dates=True)
-q1.set_index(q1.iloc[:,0], inplace=True)
-q1.index = pd.to_datetime(q1.index)
+# grid = 'g4'
+# sample='5'
+# file = "/home/joel/sim/qmap/topoclim_test_hpc/"+grid+"/smeteoc"+sample+"_1D/fsm/ICHEC-EC-EARTH_CLMcom-CCLM5-0-6_HIST_Q.txt" 
+# q1 =pd.read_csv(file, parse_dates=True)
+# q1 =pd.read_csv(file, parse_dates=True)
+# q1.set_index(q1.iloc[:,0], inplace=True)
+# q1.index = pd.to_datetime(q1.index)
 
 
-file="/home/joel/sim/qmap/topoclim_test_hpc/"+grid+"/smeteoc"+sample+"_1D/fsm/CNRM-CERFACS-CNRM-CM5_CLMcom-CCLM5-0-6_HIST_Q_H.txt"
+# file="/home/joel/sim/qmap/topoclim_test_hpc/"+grid+"/smeteoc"+sample+"_1D/fsm/CNRM-CERFACS-CNRM-CM5_CLMcom-CCLM5-0-6_HIST_Q_H.txt"
 
-hr1 =pd.read_csv(file, parse_dates=True)
-hr1.set_index(hr1.iloc[:,0], inplace=True)
-hr1.index = pd.to_datetime(hr1.index)
+# hr1 =pd.read_csv(file, parse_dates=True)
+# hr1.set_index(hr1.iloc[:,0], inplace=True)
+# hr1.index = pd.to_datetime(hr1.index)
 
-file= "/home/joel/sim/qmap/GR_data/sim/g4/forcing/meteoc"+sample+"_1H.csv"
-era5 =pd.read_csv(file, parse_dates=True)
-era5.set_index(era5.iloc[:,0], inplace=True)
-era5.index = pd.to_datetime(era5.index)
+# file= "/home/joel/sim/qmap/GR_data/sim/g4/forcing/meteoc"+sample+"_1H.csv"
+# era5 =pd.read_csv(file, parse_dates=True)
+# era5.set_index(era5.iloc[:,0], inplace=True)
+# era5.index = pd.to_datetime(era5.index)
 
-q1.ISWR.mean() 
-hr1.ISWR.resample('1d').mean().mean()
-era5.ISWR.mean() 
-
-
-print(q1.TA.mean())
-print(hr1.TA.resample('1d').mean().mean())  
-print(era5.TA.mean()  )
+# q1.ISWR.mean() 
+# hr1.ISWR.resample('1d').mean().mean()
+# era5.ISWR.mean() 
 
 
-In [78]: q1.ISWR.mean()                                                                                                                                                             
-Out[78]: 152.95145001013992                                                                                                                                                         
-In [79]: hr1.ISWR.resample('1d').mean()                                                                                                                                                            
-Out[79]: 49.450357362678844                                                                                                                                                         
-In [82]: era5.iloc[:,2].mean()                                                                                                                                                      
-Out[82]: 119.06607230607231    
+# print(q1.TA.mean())
+# print(hr1.TA.resample('1d').mean().mean())  
+# print(era5.TA.mean()  )
 
-In [83]: hr1.TA.mean()                                                                                                                                                              
-Out[83]: 271.824690732103                                                                                                                                                           
-In [84]: q1.TA.mean()                                                                                                                                                               
-Out[84]: 271.748326911377 
-In [87]: era5.iloc[:,6].mean()                                                                                                                                                      
-Out[87]: 274.4854905229906     
+
+# In [78]: q1.ISWR.mean()                                                                                                                                                             
+# Out[78]: 152.95145001013992                                                                                                                                                         
+# In [79]: hr1.ISWR.resample('1d').mean()                                                                                                                                                            
+# Out[79]: 49.450357362678844                                                                                                                                                         
+# In [82]: era5.iloc[:,2].mean()                                                                                                                                                      
+# Out[82]: 119.06607230607231    
+
+# In [83]: hr1.TA.mean()                                                                                                                                                              
+# Out[83]: 271.824690732103                                                                                                                                                           
+# In [84]: q1.TA.mean()                                                                                                                                                               
+# Out[84]: 271.748326911377 
+# In [87]: era5.iloc[:,6].mean()                                                                                                                                                      
+# Out[87]: 274.4854905229906     
