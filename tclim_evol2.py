@@ -51,6 +51,23 @@ namelist="/home/joel/sim/qmap/topoclim/fsm/nlst_qmap.txt"
 srcdir="/home/joel/src/topoCLIM/"
 fsmexepath = srcdir+"FSM"
 
+
+# =========================================================================
+#	Log
+# =========================================================================
+logfile = root+ "/logfile"
+if os.path.isfile(logfile) == True:
+    os.remove(logfile)
+
+
+# to clear logger: https://stackoverflow.com/questions/30861524/logging-basicconfig-not-creating-log-file-when-i-run-in-pycharm
+for handler in logging.root.handlers[:]:
+    logging.root.removeHandler(handler)
+
+logging.basicConfig(level=logging.DEBUG, filename=logfile,filemode="a+",format="%(asctime)-15s %(levelname)-8s %(message)s")
+
+logging.info("Run script = " + os.path.basename(__file__))
+
 #===============================================================================
 # METHODS
 #===============================================================================
@@ -539,6 +556,7 @@ def fsm_sim(meteofile, namelist, fsmexepath):
 
 def tclim_main(tscale_file, mylon, mylat, mytz, slope):
 	print(tscale_file)
+	logging.info("tcliming" + tscale_file)
 	daily_obs = resamp_1D(tscale_file)
 
 	# run qmap
@@ -665,6 +683,48 @@ def spatialfsm_era5(fsm_path,var):
 	
 
 	pd.Series(timeslicehist).to_csv(fsm_path+"/meanera5.csv",header=False, float_format='%.3f') 
+
+
+def timeseries_means(root, nsims, col, start, end, scenario):
+
+
+
+	import pandas as pd
+	mean_ts=[]
+	for ID in tqdm(range(nsims)):
+
+
+		filenames=root + "/stscale_"+str(ID+1)+"_1D"+"/output/*_"+scenario+"_Q_F.txt.txt"
+		files = glob.glob(filenames)
+		
+		models=[]
+		for f in tqdm(files): # need to handle multiple models here
+			df =pd.read_csv(f, delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
+			df.set_index(df.iloc[:,0], inplace=True)  
+			df.drop(df.columns[[0]], axis=1, inplace=True )  
+			swe=df.iloc[:,col]
+			swemean = swe[slice(start,end)].mean()
+			models.append(swemean)
+
+		mean_ts.append(np.mean(models)	)
+
+	pd.Series(mean_ts).to_csv(root+"/mean_ts_"+str(col)+"_"+scenario+start+end+".csv",header=False, float_format='%.3f') 
+
+
+def tclim_main_DEBUG(tscale_file, mylon, mylat, mytz, slope):
+	print(tscale_file)
+
+
+	# list all daily qmap files
+	daily_cordex_files = glob.glob(root+"/s"+sample+ "/fsm/*Q.txt")
+	# hourly obs
+	hourly_obs= resamp_1H(tscale_file)
+	# loop over with dissag routine
+	for daily_cordex in daily_cordex_files:
+		tclim_disagg.main(daily_cordex,hourly_obs,  str(mylon), str(mylat), str(mytz), slope)
+
+
+	meteofiles = (sorted(glob.glob(root+"/s"+sample+ "/fsm/*F.txt")))
 #===============================================================================
 # KODE
 #===============================================================================
@@ -702,15 +762,86 @@ tz = lp.tz
 
 # rerun after cleanup
 tscale_files = sorted(glob.glob(tscale_sim_dir+"/out/"+ "tscale*"))
-Parallel(n_jobs=int(num_cores))(delayed(tclim_main)(tscale_files[i], lon[i], lat[i], tz[i], lp.slp[i]) for i in tqdm(range(len(tscale_files))) )
+Parallel(n_jobs=int(num_cores))(delayed(tclim_main)(tscale_files[i], lon[i], lat[i], tz[i], lp.slp[i]) for i in tqdm(range( len(tscale_files))) )
 
+# clean up old resamples
+for f in glob.glob(tscale_sim_dir+"/out/"+ "*1D.csv"):
+	os.remove(f)
+
+# clean up old resamples
+for f in glob.glob(tscale_sim_dir+"/out/"+ "*1H.csv"):
+	os.remove(f)
 
 fsmfiles = (sorted(glob.glob(root+"/*/output/*.txt")))
 plot_hs(fsmfiles)
 
 
+tsub_root = "/home/joel/sim/qmap/ch_tmapp2"
+root = "/home/joel/sim/qmap/topoclim_ch"
+nsims=2100 # 2100
+col=2
+nclust = 100
+# compile timeseries means HIST
 
 
+start='1980-01-01' 
+end = '2005-12-31'
+scenario="HIST" 
+meanVar= root+"/mean_ts_"+str(col)+"_"+scenario+start+end+".csv"
+outname=scenario+"_" +str(col)
+
+timeseries_means(root, nsims, col, start, end, scenario)
+cmd = ["Rscript" ,"/home/joel/src/topoCLIM/spatialize.R" ,tsub_root ,meanVar, str(nclust), outname]
+subprocess.check_output(cmd)
+
+# compile timeseries meand RCP26 NEAR
+start='2030-01-01' 
+end = '2050-12-31'
+scenario="RCP26" 
+meanVar= root+"/mean_ts_"+str(col)+"_"+scenario+start+end+".csv"
+outname=scenario+"_" +str(col)+"_"+start+"_"+end
+
+timeseries_means(root, nsims, col, start, end, scenario)
+cmd = ["Rscript" ,"/home/joel/src/topoCLIM/spatialize.R" ,tsub_root ,meanVar, str(nclust), outname]
+subprocess.check_output(cmd)
+
+
+# compile timeseries meand RCP26 FAR
+start='2080-01-01' 
+end = '2099-12-31'
+scenario="RCP26" 
+meanVar= root+"/mean_ts_"+str(col)+"_"+scenario+start+end+".csv"
+outname=scenario+"_" +str(col)+"_"+start+"_"+end
+
+timeseries_means(root, nsims, col, start, end, scenario)
+cmd = ["Rscript" ,"/home/joel/src/topoCLIM/spatialize.R" ,tsub_root ,meanVar, str(nclust), outname]
+subprocess.check_output(cmd)
+
+
+# compile timeseries meand RCP85 NEAR
+root = "/home/joel/sim/qmap/topoclim_ch"
+
+start='2030-01-01' 
+end = '2050-12-31'
+scenario="RCP85" 
+meanVar= root+"/mean_ts_"+str(col)+"_"+scenario+start+end+".csv"
+outname=scenario+"_" +str(col)+"_"+start+"_"+end
+
+timeseries_means(root, nsims, col, start, end, scenario)
+cmd = ["Rscript" ,"/home/joel/src/topoCLIM/spatialize.R" ,tsub_root ,meanVar, str(nclust), outname]
+subprocess.check_output(cmd)
+
+
+# compile timeseries meand RCP85 FAR
+start='2080-01-01' 
+end = '2099-12-31'
+scenario="RCP85" 
+meanVar= root+"/mean_ts_"+str(col)+"_"+scenario+start+end+".csv"
+outname=scenario+"_" +str(col)+"_"+start+"_"+end
+
+timeseries_means(root, nsims, col, start, end, scenario)
+cmd = ["Rscript" ,"/home/joel/src/topoCLIM/spatialize.R" ,tsub_root ,meanVar, str(nclust), outname]
+subprocess.check_output(cmd)
 
 # converts standard output to FSm or...
 #qfiles = tqdm(sorted(glob.glob(root+"/*/fsm/*Q_H.txt")))
