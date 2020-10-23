@@ -14,7 +14,8 @@ sample = args[2]
 daily_obs = args[3]
 mylon = as.numeric(args[4])
 mylat = as.numeric(args[5])
-
+CORDEXPATH = args[6]
+CORDEXPATH="/home/joel/sim/qmap/raw_cordex/aresult/"
 # root = '/home/joel/sim/qmap/topoclim_test_hpc/g4'
 # sample = 'meteoc1_1D' 
 # daily_obs = '/home/joel/sim/qmap/GR_data/sim/g4//forcing/meteoc1_1D.csv' 
@@ -34,7 +35,7 @@ outdir=paste0(indir,"/aqmap_results/")
 dir.create(outdir)
 
 # dissaggregated calender corrected hourly input files 
-files = list.files(path="/home/joel/sim/qmap/raw_cordex/aresult", pattern="SCAL.nc", recursive=F, full.name=T)
+files = list.files(path=CORDEXPATH, pattern="SCAL.nc", recursive=F, full.name=T)
 hist_files = files[ grep('historical',files)]
 rcp26_files = files[ grep('rcp26',files)]
 rcp85_files = files[ grep('rcp85',files)]

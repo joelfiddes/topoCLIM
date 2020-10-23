@@ -50,7 +50,7 @@ root = '/home/joel/sim/qmap/topoclim_ch/'
 namelist="/home/joel/sim/qmap/topoclim/fsm/nlst_qmap.txt"
 srcdir="/home/joel/src/topoCLIM/"
 fsmexepath = srcdir+"FSM"
-
+CORDEXPATH=raw_dir+"/aresult/"
 
 # =========================================================================
 #	Log
@@ -214,19 +214,6 @@ def resamp_1H(path_inpt, freq='1H'):# create 1h wfj era5 obs data by
 		header=['ISWR', 'ILWR', 'Sf', 'Rf', 'TA', 'RH', 'VW', 'P'], sep=',')
 	return(path_inpt.split('.')[0]  + '_'+freq+'.csv')
 
-
-
-def run_qmap(path_inpt):
-
-	#linearly resample era5 to daily and capture new path as variable 
-	daily_obs = resamp(path_inpt, '1D')
-
-	# run qmap
-	sample =daily_obs.split('/')[-1].split('.')[0]
-	#logging.info("Running qmap job "+ sample )
-	cmd = ["Rscript", "qmap_hour_plots_daily.R", root ,str(sample),  daily_obs]
-	subprocess.check_output(cmd)
-	#logging.info("Qmap job "+ sample + "complete") 
 
 def extract_timeseries(ncfile, lon, lat):
 	''' extract timesseries from netcdf file based on lon and lat'''
@@ -562,7 +549,7 @@ def tclim_main(tscale_file, mylon, mylat, mytz, slope):
 	# run qmap
 	sample =daily_obs.split('/')[-1].split('.')[0]
 	#logging.info("Running qmap job "+ sample )
-	cmd = ["Rscript", "qmap_hour_plots_daily.R", root ,str(sample),  daily_obs, str(mylon), str(mylat)]
+	cmd = ["Rscript", "qmap_hour_plots_daily.R", root ,str(sample),  daily_obs, str(mylon), str(mylat), CORDEXPATH]
 	subprocess.check_output(cmd)
 
 	cmd = ["Rscript", "aggregate_qmap_results.R", root ,str(sample)]
@@ -686,8 +673,6 @@ def spatialfsm_era5(fsm_path,var):
 
 
 def timeseries_means(root, nsims, col, start, end, scenario):
-
-
 
 	import pandas as pd
 	mean_ts=[]
