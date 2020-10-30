@@ -35,7 +35,7 @@ meanswe =read.csv(meanVar ,head=F )
 require(raster)
 require(viridis)
 	
-zlim=c(0,3)	
+
 mycol=viridis(100)
 
 pdf(paste0(tsub_root,"/",outname,"_map.pdf"))
@@ -50,5 +50,5 @@ rast.mosaic <- do.call(mosaic,rast.list)
 hist<-rast.mosaic
 	#plot(hist,zlim=zlim, col=mycol, main= "1980-2000 Hist ")
 writeRaster(hist, paste0(tsub_root,"/",outname,"__map.tif"), overwrite=T)
-plot(hist, zlim=zlim, col=mycol)
+plot(hist, col=mycol)
 dev.off()
