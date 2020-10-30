@@ -97,11 +97,11 @@ def natural_keys(text):
     '''
     return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
-tscale_files_sort  = tscale_files.sort(key=natural_keys)
+tscale_files.sort(key=natural_keys)
 
 mytasks = range(int(starti)-1,int(endi))
 for i in mytasks:
-	tscale_file = tscale_files_sort[i]
+	tscale_file = tscale_files[i]
 	logging.info("qmap " + tscale_file)
 	print("qmap " + tscale_file)
 	
