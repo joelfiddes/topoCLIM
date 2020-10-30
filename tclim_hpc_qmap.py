@@ -34,6 +34,7 @@ starti = sys.argv[4]
 endi= sys.argv[5]
 namelist = "/home/caduff/src/topoCLIM/nlst.txt" # in src directory
 fsmexepath = "/home/caduff/src/FSM/FSM" # version compiled on hyperion
+srcdir = "/home/caduff/src/topoCLIM/"
 #===============================================================================
 # INPUT
 #===============================================================================
