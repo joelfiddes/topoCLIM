@@ -43,7 +43,7 @@ endi= sys.argv[5]
 # INPUT
 #===============================================================================
 #wd = '/home/joel/sim/qmap/topoclim_ch/'
-#tscale_sim_dir = wd+ "/ch_tmapp2/"
+#tscale_sim_dir = "/home/joel/sim/qmap/ch_tmapp2/"
 CORDEXPATH=cordex_dir+"/aresult/"
 jobid = os.getenv('SLURM_ARRAY_TASK_ID')
 # =========================================================================
@@ -80,9 +80,26 @@ logging.info("Computing qmap files " + str(range(int(starti)-1,int(endi)) ) )
 
 # find all era5 meteo files after cleanup
 tscale_files = sorted(glob.glob(tscale_sim_dir+"/out/"+ "tscale*"))
+
+# natural sorting https://stackoverflow.com/questions/5967500/how-to-correctly-sort-a-string-with-a-number-inside
+import re
+
+def atoi(text):
+    return int(text) if text.isdigit() else text
+
+def natural_keys(text):
+    '''
+    alist.sort(key=natural_keys) sorts in human order
+    http://nedbatchelder.com/blog/200712/human_sorting.html
+    (See Toothy's implementation in the comments)
+    '''
+    return [ atoi(c) for c in re.split(r'(\d+)', text) ]
+
+tscale_files_sort  = tscale_files.sort(key=natural_keys)
+
 mytasks = range(int(starti)-1,int(endi))
 for i in mytasks:
-	tscale_file = tscale_files[i]
+	tscale_file = tscale_files_sort[i]
 	logging.info("qmap " + tscale_file)
 	print("qmap " + tscale_file)
 	
