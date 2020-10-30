@@ -106,12 +106,17 @@ tscale_files.sort(key=natural_keys)
 
 mytasks = range(int(starti)-1,int(endi))
 for i in mytasks:
+
 	tscale_file = tscale_files[i]
 	logging.info("qmap " + tscale_file)
 	print("qmap " + tscale_file)
 	
 	daily_obs = tclim.resamp_1D(tscale_file)
 	sample =daily_obs.split('/')[-1].split('.')[0]
+
+	if os.path.exists(wd+ '/s'+sample+"/QSUCCESS"):
+		print(tscale_file + " done!")
+		continue
 
 	logging.info("qmap... ")
 	cmd = ["Rscript", "qmap_hour_plots_daily.R", wd ,str(sample),  daily_obs, str(lp.lon[i]), str(lp.lat[i]), CORDEXPATH]
@@ -124,7 +129,7 @@ for i in mytasks:
 	cmd = ["Rscript", "qmap_plots.R", wd ,str(sample),  daily_obs]
 	#subprocess.check_output(cmd)
 
-		# cleanup
+	# cleanup
 	tclim.findDelete(wd+"/s"+sample+ "/aqmap_results", dir=True)
 
 	# list all daily qmap files
@@ -143,7 +148,10 @@ for i in mytasks:
 	for meteofile in meteofiles:
 		tclim.fsm_sim(meteofile,namelist,fsmexepath)
 
+
+
 	tclim.findDelete(wd+"/s"+sample+ "/fsm", dir=True)
+	f = open("QSUCCESS", "w")
 	os.chdir(srcdir)
 
 
