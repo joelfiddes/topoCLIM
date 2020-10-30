@@ -19,17 +19,7 @@ Details:
 import sys
 import os
 import glob
-import xarray as xr
-import calendar3 as cal3
-import shutil
 import subprocess
-import pandas as pd
-from tqdm import tqdm
-import tclim_disagg
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-from joblib import Parallel, delayed
 import logging
 import tclim_src as tclim
 
@@ -111,3 +101,12 @@ for i in mytasks:
 	subprocess.check_output(cmd)
 
 
+# clean up old resamples
+for f in glob.glob(tscale_sim_dir+"/out/"+ "*1D.csv"):
+	if os.path.exists(f):  
+		os.remove(f)
+
+# clean up old resamples
+for f in glob.glob(tscale_sim_dir+"/out/"+ "*1H.csv"):
+	if os.path.exists(f):  
+		os.remove(f)
