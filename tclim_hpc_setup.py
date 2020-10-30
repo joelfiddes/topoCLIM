@@ -61,6 +61,7 @@ logging.info("Run script = " + os.path.basename(__file__))
 # list avaliable cordex
 nc_complete = tclim.completeFiles(raw_dir) 
 print(nc_complete)
+logging.info(nc_complete)
 # convert all cordex to standard calender - should be run once per domain (but is quick)
 Parallel(n_jobs=int(num_cores))(delayed(tclim.calendarNinja)(nc,nc_standard_hist,nc_standard_clim) for nc in nc_complete)
 print("CalendarNinja done!")
