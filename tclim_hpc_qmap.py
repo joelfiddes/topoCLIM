@@ -67,11 +67,13 @@ logging.info("Run script = " + os.path.basename(__file__))
 
 # clean up old resamples
 for f in glob.glob(tscale_sim_dir+"/out/"+ "*1D.csv"):
-	os.remove(f)
+	if os.path.exists(f):  
+		os.remove(f)
 
 # clean up old resamples
 for f in glob.glob(tscale_sim_dir+"/out/"+ "*1H.csv"):
-	os.remove(f)
+	if os.path.exists(f):  
+		os.remove(f)
 
 # get grid box
 lp = pd.read_csv(tscale_sim_dir + "/listpoints.txt")
