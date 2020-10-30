@@ -78,7 +78,7 @@ lp = pd.read_csv(tscale_sim_dir + "/listpoints.txt")
 
 # find all era5 meteo files after cleanup
 tscale_files = sorted(glob.glob(tscale_sim_dir+"/out/"+ "tscale*"))
-mytasks = range(int(starti)-1:int(endi))
+mytasks = range(int(starti)-1,int(endi))
 for i in mytasks:
 	tscale_file = tscale_files[i]
 	logging.info("qmap " + tscale_file)
