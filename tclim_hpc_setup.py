@@ -24,7 +24,7 @@ import glob
 wd=sys.argv[1] #'/home/joel/sim/qmap/topoclim_ch/'
 raw_dir = sys.argv[2] # /home/caduff/sim/tclim/raw_cordex
 num_cores=sys.argv[3] #10
-
+tscale_sim_dir =sys.argv[4] 
 #===============================================================================
 # INPUT
 #===============================================================================
@@ -66,9 +66,20 @@ logging.info(nc_complete)
 Parallel(n_jobs=int(num_cores))(delayed(tclim.calendarNinja)(nc,nc_standard_hist,nc_standard_clim) for nc in nc_complete)
 print("CalendarNinja done!")
 
+# clean up old resamples
+for f in glob.glob(tscale_sim_dir+"/out/"+ "*1D.csv"):
+	os.remove(f)
+
+# clean up old resamples
+for f in glob.glob(tscale_sim_dir+"/out/"+ "*1H.csv"):
+	os.remove(f)
 
 
+# find all era5 meteo files after cleanup
+tscale_files = sorted(glob.glob(tscale_sim_dir+"/out/"+ "tscale*"))
 
+logging.info("Number tscalefiles= "+str(len(tscale_files)))
+logging.info("Number tscalefiles= "+str(len(tscale_files)))
 
 
 

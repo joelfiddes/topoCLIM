@@ -47,7 +47,7 @@ CORDEXPATH=cordex_dir+"/aresult/"
 # =========================================================================
 #	Log
 # =========================================================================
-logfile = root+ "/logfile_qmap"
+logfile = wd+ "/logs/logfile_qmap"
 if os.path.isfile(logfile) == True:
     os.remove(logfile)
 
