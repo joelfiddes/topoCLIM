@@ -22,6 +22,9 @@ import glob
 import subprocess
 import logging
 import tclim_src as tclim
+import tclim_disagg
+import pandas as pd
+
 
 #grid= sys.argv[1]
 wd=sys.argv[1]
@@ -29,6 +32,8 @@ tscale_sim_dir=sys.argv[2]
 cordex_dir=sys.argv[3]
 starti = sys.argv[4]
 endi= sys.argv[5]
+namelist = "nlst.txt" # in src directory
+fsmexepath = "/home/caduff/src/FSM/FSM" # version compiled on hyperion
 #===============================================================================
 # INPUT
 #===============================================================================
@@ -36,6 +41,15 @@ endi= sys.argv[5]
 #tscale_sim_dir = "/home/joel/sim/qmap/ch_tmapp2/"
 CORDEXPATH=cordex_dir+"/aresult/"
 jobid = os.getenv('SLURM_ARRAY_TASK_ID')
+
+#===============================================================================
+# DIRS
+#===============================================================================
+if not os.path.exists(wd):
+		os.makedirs(wd)
+
+if not os.path.exists(wd+"/logs/"):
+		os.makedirs(wd+"/logs/")
 # =========================================================================
 #	Log
 # =========================================================================
@@ -99,6 +113,34 @@ for i in mytasks:
 	sample =daily_obs.split('/')[-1].split('.')[0]
 	cmd = ["Rscript", "qmap_hour_plots_daily.R", wd ,str(sample),  daily_obs, str(lp.lon[i]), str(lp.lat[i]), CORDEXPATH]
 	subprocess.check_output(cmd)
+
+	cmd = ["Rscript", "aggregate_qmap_results.R", wd ,str(sample)]
+	subprocess.check_output(cmd)
+
+	cmd = ["Rscript", "qmap_plots.R", wd ,str(sample),  daily_obs]
+	#subprocess.check_output(cmd)
+
+		# cleanup
+	tclim.findDelete(wd+"/s"+sample+ "/aqmap_results", dir=True)
+
+	# list all daily qmap files
+	daily_cordex_files = glob.glob(wd+"/s"+sample+ "/fsm/*Q.txt")
+	# hourly obs
+	hourly_obs= tclim.resamp_1H(tscale_file)
+	# loop over with dissag routine
+	for daily_cordex in daily_cordex_files:
+		tclim_disagg.main(daily_cordex,hourly_obs,  str(lp.lon[i]), str(lp.lat[i]), str(lp.tz[i]), str(lp.slp[i]))
+
+
+	meteofiles = (sorted(glob.glob(wd+"/s"+sample+ "/fsm/*F.txt")))
+
+	for meteofile in meteofiles:
+		tclim.fsm_sim(meteofile,namelist,fsmexepath)
+
+	tclim.findDelete(wd+"/s"+sample+ "/fsm", dir=True)
+	os.chdir(srcdir)
+
+
 
 
 # clean up old resamples

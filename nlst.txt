@@ -1,9 +1,7 @@
-! namelists for running FSM with the Col de Porte example
+! namelists for running FSM with tclim
 &config
-  nconfig = 31
 /
 &drive
-  met_file = './meteo/CNRM-CERFACS-CNRM-CM5_CLMcom-CCLM5-0-6_HIST_F.txt'
   zT = 1.5
   zvar = .FALSE.
 /
@@ -13,5 +11,5 @@
   Tsoil = 282.98 284.17 284.70 284.70
 /
 &outputs
-  out_file = 'out.txt'
+
 /
