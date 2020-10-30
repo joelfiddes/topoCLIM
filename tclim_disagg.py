@@ -7,8 +7,8 @@ cal_period = slice('2000-01-01', '2015-12-31')
 def main(daily_cordex,hourly_obs, mylon, mylat,mytz, slope):
 
 	print(mytz)
-	slope=int(slope)
-	
+	slope=float(slope)
+
 	df_obs= pd.read_csv(hourly_obs, index_col=0, parse_dates=True)
 	data_obs_hourly = df_obs.loc[:,('TA', 'RH', 'ISWR','ILWR', 'VW')]
 	data_obs_hourly.rename(columns={'TA': 'temp',  'RH': 'hum', 
