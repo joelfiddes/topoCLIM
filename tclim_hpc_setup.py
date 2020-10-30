@@ -28,7 +28,6 @@ num_cores=sys.argv[3] #10
 #===============================================================================
 # INPUT
 #===============================================================================
-raw_dir= wd+'/raw_cordex/'
 nc_standard_clim=raw_dir+'/aresult/standard/ICHEC-EC-EARTH_rcp85_r12i1p1_CLMcom-CCLM5-0-6_v1__TS.nc_TS_ALL_ll.nc'
 nc_standard_hist=raw_dir+'/aresult/standard/ICHEC-EC-EARTH_historical_r12i1p1_KNMI-RACMO22E_v1__TS.nc_TS_ALL_ll.nc'
 
@@ -61,9 +60,10 @@ logging.info("Run script = " + os.path.basename(__file__))
 # =========================================================================
 # list avaliable cordex
 nc_complete = tclim.completeFiles(raw_dir) 
-
+print(nc_complete)
 # convert all cordex to standard calender - should be run once per domain (but is quick)
 Parallel(n_jobs=int(num_cores))(delayed(tclim.calendarNinja)(nc,nc_standard_hist,nc_standard_clim) for nc in nc_complete)
+print("CalendarNinja done!")
 
 
 
