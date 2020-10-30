@@ -9,14 +9,14 @@ require(ncdf4)
 	# indir="/home/joel/sim/qmap/topoclim_test" 
 
 args = commandArgs(trailingOnly=TRUE)
-root = args[1]
+wd = args[1]
 sample = args[2]
 daily_obs = args[3]
 mylon = as.numeric(args[4])
 mylat = as.numeric(args[5])
 CORDEXPATH = args[6]
 
-# root = '/home/joel/sim/qmap/topoclim_test_hpc/g4'
+# wd = '/home/joel/sim/qmap/topoclim_test_hpc/g4'
 # sample = 'meteoc1_1D' 
 # daily_obs = '/home/joel/sim/qmap/GR_data/sim/g4//forcing/meteoc1_1D.csv' 
 # mylon = 9.94
@@ -28,7 +28,7 @@ CORDEXPATH = args[6]
 		
 plot=FALSE
 # Setup ========================================================================
-indir=paste0(root, '/s',sample)
+indir=paste0(wd, '/s',sample)
 dir.create(indir)
 
 outdir=paste0(indir,"/aqmap_results/")
@@ -40,6 +40,7 @@ hist_files = files[ grep('historical',files)]
 rcp26_files = files[ grep('rcp26',files)]
 rcp85_files = files[ grep('rcp85',files)]
 
+if ( length(hist_files)==0){print("ERROR! No cordex files found!")}
 # different models have different time spans so need to define common periods where all models have data
 
 # common historical period of models

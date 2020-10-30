@@ -1,6 +1,6 @@
 #!/bin/bash
 # JobArray.sh
-# run : sbatch slurm_setup.sh /home/caduff/sim/tclim_ch/ /home/caduff/sim/cordex_repo/raw_cordex /home/caduff/sim/ch_tmapp_50/ 10
+# run : sbatch slurm_setup.sh /home/caduff/sim/tclim_ch/ /home/caduff/sim/raw_cordex /home/caduff/sim/ch_tmapp_50/ 10
 #SBATCH -J tclim_setup # A single job name for the array
 #SBATCH -p node # Partition (required)
 #SBATCH -A node # Account (required)

@@ -76,6 +76,8 @@ for f in glob.glob(tscale_sim_dir+"/out/"+ "*1H.csv"):
 # get grid box
 lp = pd.read_csv(tscale_sim_dir + "/listpoints.txt")
 
+logging.info("Computing qmap files " + str(range(int(starti)-1,int(endi)) ) )
+
 # find all era5 meteo files after cleanup
 tscale_files = sorted(glob.glob(tscale_sim_dir+"/out/"+ "tscale*"))
 mytasks = range(int(starti)-1,int(endi))
@@ -83,7 +85,7 @@ for i in mytasks:
 	tscale_file = tscale_files[i]
 	logging.info("qmap " + tscale_file)
 	print("qmap " + tscale_file)
-	logging.info("qmap " + tscale_file)
+	
 	daily_obs = tclim.resamp_1D(tscale_file)
 	sample =daily_obs.split('/')[-1].split('.')[0]
 	cmd = ["Rscript", "qmap_hour_plots_daily.R", wd ,str(sample),  daily_obs, str(lp.lon[i]), str(lp.lat[i]), CORDEXPATH]
