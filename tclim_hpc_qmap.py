@@ -111,9 +111,12 @@ for i in mytasks:
 	
 	daily_obs = tclim.resamp_1D(tscale_file)
 	sample =daily_obs.split('/')[-1].split('.')[0]
+
+	logging.info("qmap... ")
 	cmd = ["Rscript", "qmap_hour_plots_daily.R", wd ,str(sample),  daily_obs, str(lp.lon[i]), str(lp.lat[i]), CORDEXPATH]
 	subprocess.check_output(cmd)
 
+	logging.info("Aggregate results... ")
 	cmd = ["Rscript", "aggregate_qmap_results.R", wd ,str(sample)]
 	subprocess.check_output(cmd)
 
@@ -128,12 +131,14 @@ for i in mytasks:
 	# hourly obs
 	hourly_obs= tclim.resamp_1H(tscale_file)
 	# loop over with dissag routine
+
+	logging.info("Dissagregate time... ")
 	for daily_cordex in daily_cordex_files:
 		tclim_disagg.main(daily_cordex,hourly_obs,  str(lp.lon[i]), str(lp.lat[i]), str(lp.tz[i]), str(lp.slp[i]))
 
 
 	meteofiles = (sorted(glob.glob(wd+"/s"+sample+ "/fsm/*F.txt")))
-
+	logging.info("FSM sim... ")
 	for meteofile in meteofiles:
 		tclim.fsm_sim(meteofile,namelist,fsmexepath)
 
