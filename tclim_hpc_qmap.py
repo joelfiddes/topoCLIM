@@ -32,7 +32,7 @@ tscale_sim_dir=sys.argv[2]
 cordex_dir=sys.argv[3]
 starti = sys.argv[4]
 endi= sys.argv[5]
-namelist = "nlst.txt" # in src directory
+namelist = "/home/caduff/src/topoCLIM/nlst.txt" # in src directory
 fsmexepath = "/home/caduff/src/FSM/FSM" # version compiled on hyperion
 #===============================================================================
 # INPUT
