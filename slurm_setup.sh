@@ -1,6 +1,6 @@
 #!/bin/bash
 # JobArray.sh
-# run : sbatch slurm_setup.sh /home/caduff/sim/tclim_ch/ /home/caduff/sim/cordex_repo/raw_cordex 10
+# run : sbatch slurm_setup.sh /home/caduff/sim/tclim_ch/ /home/caduff/sim/cordex_repo/raw_cordex /home/caduff/sim/ch_tmapp_50/ 10
 #SBATCH -J tclim_setup # A single job name for the array
 #SBATCH -p node # Partition (required)
 #SBATCH -A node # Account (required)
@@ -18,7 +18,7 @@ pwd; hostname; date
 
 # run sequentially
 # $1 is wd
-python tclim_hpc_setup.py $1 $2 $3
+python tclim_hpc_setup.py $1 $2 $3 $4
 
 
 date

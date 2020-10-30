@@ -1,6 +1,6 @@
 #!/bin/bash
 # JobArray.sh
-# run : sbatch slurm_qmap.sh  /home/caduff/sim/tclim_ch/ /home/caduff/sim/ch_tmapp_50/ /home/caduff/sim/cordex_repo 
+# run : sbatch slurm_qmap.sh  /home/caduff/sim/tclim_ch/ /home/caduff/sim/ch_tmapp_50/ /home/caduff/sim/cordex_repo 1100
 #SBATCH -J tmapp_setup # A single job name for the array
 #SBATCH -p node # Partition (required)
 #SBATCH -A node # Account (required)
@@ -16,9 +16,17 @@
 
 pwd; hostname; date
 
-# run sequentially
-# $1 is wd
-python tclim_hpc_qmap.py $1 $2 $3
+#Set the number of runs that each SLURM task should do
+PER_TASK=$(($4/100))
+
+# Calculate the starting and ending values for this task based
+# on the SLURM task and the number of runs per task.
+START_NUM=$(( ($SLURM_ARRAY_TASK_ID - 1) * $PER_TASK + 1 ))
+END_NUM=$(( $SLURM_ARRAY_TASK_ID * $PER_TASK ))
+
+# Print the task and run range
+echo This is task $SLURM_ARRAY_TASK_ID, which will do runs $START_NUM to $END_NUM
+python tclim_hpc_qmap.py $1 $2 $3 $START_NUM $END_NUM
 
 
 date

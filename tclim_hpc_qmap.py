@@ -37,17 +37,19 @@ import tclim_src as tclim
 wd=sys.argv[1]
 tscale_sim_dir=sys.argv[2]
 cordex_dir=sys.argv[3]
+starti = sys.argv[4]
+endi= sys.argv[5]
 #===============================================================================
 # INPUT
 #===============================================================================
 #wd = '/home/joel/sim/qmap/topoclim_ch/'
 #tscale_sim_dir = wd+ "/ch_tmapp2/"
 CORDEXPATH=cordex_dir+"/aresult/"
-
+jobid = os.getenv('SLURM_ARRAY_TASK_ID')
 # =========================================================================
 #	Log
 # =========================================================================
-logfile = wd+ "/logs/logfile_qmap"
+logfile = wd+ "/logs/logfile_qmap"+str(jobid)
 if os.path.isfile(logfile) == True:
     os.remove(logfile)
 
@@ -76,10 +78,10 @@ lp = pd.read_csv(tscale_sim_dir + "/listpoints.txt")
 
 # find all era5 meteo files after cleanup
 tscale_files = sorted(glob.glob(tscale_sim_dir+"/out/"+ "tscale*"))
-
-for i in range( len(tscale_files)):
-	
+mytasks = range(int(starti)-1:int(endi))
+for i in mytasks:
 	tscale_file = tscale_files[i]
+	logging.info("qmap " + tscale_file)
 	print("qmap " + tscale_file)
 	logging.info("qmap " + tscale_file)
 	daily_obs = tclim.resamp_1D(tscale_file)
