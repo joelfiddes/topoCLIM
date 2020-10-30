@@ -70,23 +70,17 @@ logging.info("Run script = " + os.path.basename(__file__))
 # KODE
 #===============================================================================
 
-# clean up old resamples
-for f in glob.glob(tscale_sim_dir+"/out/"+ "*1D.csv"):
-	if os.path.exists(f):  
-		os.remove(f)
 
-# clean up old resamples
-for f in glob.glob(tscale_sim_dir+"/out/"+ "*1H.csv"):
-	if os.path.exists(f):  
-		os.remove(f)
 
 # get grid box
 lp = pd.read_csv(tscale_sim_dir + "/listpoints.txt")
 
 logging.info("Computing qmap files " + str(range(int(starti)-1,int(endi)) ) )
 
-# find all era5 meteo files after cleanup
+# find all tscale file excluding 1H and 1D ones
 tscale_files = sorted(glob.glob(tscale_sim_dir+"/out/"+ "tscale*"))
+b = [item for item in tscale_files if '1H' not in item]     
+tscale_files = [item for item in b if '1D' not in item]     
 
 # natural sorting https://stackoverflow.com/questions/5967500/how-to-correctly-sort-a-string-with-a-number-inside
 import re
@@ -156,13 +150,13 @@ for i in mytasks:
 
 
 
+# do this right at end when dnpo risk of deleting files in use
+# # clean up old resamples
+# for f in glob.glob(tscale_sim_dir+"/out/"+ "*1D.csv"):
+# 	if os.path.exists(f):  
+# 		os.remove(f)
 
-# clean up old resamples
-for f in glob.glob(tscale_sim_dir+"/out/"+ "*1D.csv"):
-	if os.path.exists(f):  
-		os.remove(f)
-
-# clean up old resamples
-for f in glob.glob(tscale_sim_dir+"/out/"+ "*1H.csv"):
-	if os.path.exists(f):  
-		os.remove(f)
+# # clean up old resamples
+# for f in glob.glob(tscale_sim_dir+"/out/"+ "*1H.csv"):
+# 	if os.path.exists(f):  
+# 		os.remove(f)
