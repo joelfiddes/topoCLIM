@@ -23,14 +23,14 @@ import glob
 
 wd=sys.argv[1] #'/home/joel/sim/qmap/topoclim_ch/'
 raw_dir = sys.argv[2] # /home/caduff/sim/tclim/raw_cordex
-num_cores=sys.argv[3] #10
-tscale_sim_dir =sys.argv[4] 
+tscale_sim_dir =sys.argv[3] 
+num_cores=sys.argv[4] #10
+
 #===============================================================================
 # INPUT
 #===============================================================================
 nc_standard_clim=raw_dir+'/aresult/standard/ICHEC-EC-EARTH_rcp85_r12i1p1_CLMcom-CCLM5-0-6_v1__TS.nc_TS_ALL_ll.nc'
 nc_standard_hist=raw_dir+'/aresult/standard/ICHEC-EC-EARTH_historical_r12i1p1_KNMI-RACMO22E_v1__TS.nc_TS_ALL_ll.nc'
-
 
 # =========================================================================
 #	Log / SETUP
