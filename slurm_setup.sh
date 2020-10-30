@@ -5,7 +5,7 @@
 #SBATCH -p node # Partition (required)
 #SBATCH -A node # Account (required)
 #SBATCH -q normal # QOS (required)
-#SBATCH -n $3 # one cores
+#SBATCH -n 10 # one cores
 #SBATCH -t 01:00:00 # Running time of 2 days
 #SBATCH --mem 4000 # Memory request of 4 GB
 #SBATCH -o log_setup.out # Standard output - write the console output to the output folder %A= Job ID, %a = task or Step ID
