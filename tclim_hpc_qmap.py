@@ -139,7 +139,7 @@ for i in mytasks:
 
 
 	tclim.findDelete(wd+"/s"+sample+ "/fsm", dir=True)
-	f = open("QSUCCESS", "w")
+	f = open(wd+ '/s'+sample+"/QSUCCESS", "w")
 	os.chdir(srcdir)
 
 
