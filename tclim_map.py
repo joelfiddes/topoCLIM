@@ -4,9 +4,10 @@ import glob
 import subprocess
 import pandas as pd
 from tqdm import tqdm
+import numpy as np
 
 tsub_root = "/home/caduff/sim//ch_tmapp_50"
-root = "/home/caduff/sim/qmap/topoclim_ch"
+root = "/home/caduff/sim/tclim_ch"
 rcode = "/home/caduff/src/topoCLIM/spatialize.R"
 nsims=1050 # 2100
 col=2
@@ -16,19 +17,24 @@ def timeseries_means(root, nsims, col, start, end, scenario):
 
 	import pandas as pd
 	mean_ts=[]
-	for ID in tqdm(range(nsims)):
+	for ID in (range(nsims)):
 
 
 		filenames=root + "/stscale_"+str(ID+1)+"_1D"+"/output/*_"+scenario+"_Q_F.txt.txt"
 		files = glob.glob(filenames)
 		
 		models=[]
-		for f in tqdm(files): # need to handle multiple models here
+		for f in (files): # need to handle multiple models here
 			df =pd.read_csv(f, delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
 			df.set_index(df.iloc[:,0], inplace=True)  
 			df.drop(df.columns[[0]], axis=1, inplace=True )  
 			swe=df.iloc[:,col]
-			swemean = swe[slice(start,end)].mean()
+			try:
+				swemean = swe[slice(start,end)].mean()
+			except:
+				print(f)
+				print(str(ID)+ " failed"
+
 			models.append(swemean)
 
 		mean_ts.append(np.mean(models)	)
