@@ -8,7 +8,7 @@
 # num_cores=sys.argv[4] #10
 
 
-#SBATCH -J tclim_setup # A single job name for the array
+#SBATCH -J etup # A single job name for the array
 #SBATCH -p node # Partition (required)
 #SBATCH -A node # Account (required)
 #SBATCH -q normal # QOS (required)

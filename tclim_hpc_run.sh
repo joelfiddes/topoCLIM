@@ -22,5 +22,5 @@ jid1=${SBATCHID//[!0-9]/}
 SBATCHID=$(sbatch  --dependency=afterany:$jid1 --array=1-$NGRIDS  slurm_qmap.sh $1 $2 $3 $4)
 jid2=${SBATCHID//[!0-9]/}
 
-SBATCHID=$(sbatch  --dependency=afterany:$jid1 --array=1-$NGRIDS  slurm_postqmap.sh $1 $2 $4)
-jid2=${SBATCHID//[!0-9]/}
+SBATCHID=$(sbatch  --dependency=afterany:$jid2 --array=1-$NGRIDS  slurm_postqmap.sh $1 $2 $4)
+jid3=${SBATCHID//[!0-9]/}
