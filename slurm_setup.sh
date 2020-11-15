@@ -15,8 +15,8 @@
 #SBATCH -n 10 # one cores
 #SBATCH -t 01:00:00 # Running time of 2 days
 #SBATCH --mem 4000 # Memory request of 4 GB
-#SBATCH -o log_setup.out # Standard output - write the console output to the output folder %A= Job ID, %a = task or Step ID
-#SBATCH -e log_setup.err # Standard error -write errors to the errors folder and
+#SBATCH -o LOG_setup.out # Standard output - write the console output to the output folder %A= Job ID, %a = task or Step ID
+#SBATCH -e LOG_setup.err # Standard error -write errors to the errors folder and
 #SBATCH --array=1 # create a array from 1to16 and limit the concurrent runing task  to 50
 #SBATCH --mail-user=joelfiddes@gmail.com
 #SBATCH --mail-type=ALL  # Send me some mails when jobs end or fail.

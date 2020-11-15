@@ -1,6 +1,6 @@
 #!/bin/bash
 # JobArray.sh
-# run : sbatch slurm_postqmap.sh  /home/caduff/sim/tclim_ch/ /home/caduff/sim/ch_tmapp_50/  1100
+# run : sbatch slurm_postqmap.sh  /home/caduff/sim/tclim_ch2/ /home/caduff/sim/ch_tmapp_50/  1100
 #SBATCH -J postqmap # A single job name for the array
 #SBATCH -p node # Partition (required)
 #SBATCH -A node # Account (required)
