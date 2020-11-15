@@ -1,4 +1,6 @@
-# Example bash tclim_hpc_run.sh /home/caduff/sim/tclim_ch/ /home/caduff/sim/ccamm_inter  /home/caduff/sim/ch_tmapp_50/ /home/caduff/sim/raw_cordex 1100
+# Example:
+
+# bash tclim_hpc_run.sh /home/caduff/sim/tclim_ch/ /home/caduff/sim/ccamm_inter  /home/caduff/sim/ch_tmapp_50/ /home/caduff/sim/raw_cordex 1100
 
 # Args:
 #	$1: tclim workdir
@@ -6,7 +8,7 @@
 #   $3: cordex raw dir
 # 	$4: number of samples rounded up to nearest 100
 
-NGRID=100
+NGRIDS=100
 
 # activate env
 source tclim3/bin/activate
