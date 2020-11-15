@@ -31,9 +31,13 @@ def timeseries_means(root, nsims, col, start, end, scenario):
 			swe=df.iloc[:,col]
 			try:
 				swemean = swe[slice(start,end)].mean()
+				#mask = (df['date'].dt.month == 6) 
+				#df.loc[mask]
+				#df = pd.DataFrame(index=pd.date_range(dt.datetime(2015,1,1), dt.datetime(2015,5,1)))
+				#df.loc[df.index.month==8] get august of every year
 			except:
 				print(f)
-				print(str(ID)+ " failed"
+				print(str(ID)+ " failed")
 
 			models.append(swemean)
 

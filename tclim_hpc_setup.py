@@ -22,8 +22,8 @@ import tclim_src as tclim
 import glob
 
 wd=sys.argv[1] #'/home/joel/sim/qmap/topoclim_ch/'
-raw_dir = sys.argv[2] # /home/caduff/sim/tclim/raw_cordex
-tscale_sim_dir =sys.argv[3] 
+tscale_sim_dir =sys.argv[2] 
+raw_dir = sys.argv[3] # /home/caduff/sim/tclim/raw_cordex
 num_cores=sys.argv[4] #10
 
 #===============================================================================

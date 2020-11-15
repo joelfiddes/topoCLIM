@@ -725,7 +725,7 @@ nc_complete = completeFiles(raw_dir)
 # convert all cordex to standard calender - should be run once per domain (but is quick)
 
 
-#calendarNinja(nc_complete, nc_standard_hist,nc_standard_clim)
+# calendarNinja(nc_complete, nc_standard_hist,nc_standard_clim)
 Parallel(n_jobs=int(num_cores))(delayed(calendarNinja)(nc,nc_standard_hist,nc_standard_clim) for nc in nc_complete)
 
 # find all era5 meteo files

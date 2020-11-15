@@ -1,6 +1,13 @@
 #!/bin/bash
 # JobArray.sh
-# run : sbatch slurm_setup.sh /home/caduff/sim/tclim_ch/ /home/caduff/sim/raw_cordex /home/caduff/sim/ch_tmapp_50/ 10
+# run : sbatch slurm_setup.sh /home/caduff/sim/tclim_ch/ /home/caduff/sim/ch_tmapp_50/ /home/caduff/sim/raw_cordex  10
+
+# wd=sys.argv[1] #'/home/joel/sim/qmap/topoclim_ch/'
+# raw_dir = sys.argv[2] # /home/caduff/sim/tclim/raw_cordex
+# tscale_sim_dir =sys.argv[3] 
+# num_cores=sys.argv[4] #10
+
+
 #SBATCH -J tclim_setup # A single job name for the array
 #SBATCH -p node # Partition (required)
 #SBATCH -A node # Account (required)
