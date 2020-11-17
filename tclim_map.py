@@ -13,11 +13,19 @@ nsims=1050 # 2100
 col=2
 nclust = 50
 
-def timeseries_means(root, nsims, col, start, end, scenario):
+tsub_root = "/home/caduff/sim//ch_tmapp_100"
+root = "/home/caduff/sim/tclim_ch2"
+rcode = "/home/caduff/src/tmapp2/spatialize.R"
+nsims=2100 # 2100
+col=2
+nclust = 100
 
+def timeseries_means(root, nsims, col, start, end, scenario):
+	print (scenario)
+	print (start)
 	import pandas as pd
 	mean_ts=[]
-	for ID in (range(nsims)):
+	for ID in tqdm(range(nsims)):
 
 
 		filenames=root + "/stscale_"+str(ID+1)+"_1D"+"/output/*_"+scenario+"_Q_F.txt.txt"
@@ -25,6 +33,7 @@ def timeseries_means(root, nsims, col, start, end, scenario):
 		
 		models=[]
 		for f in (files): # need to handle multiple models here
+
 			df =pd.read_csv(f, delim_whitespace=True, parse_dates=[[0,1,2]], header=None)
 			df.set_index(df.iloc[:,0], inplace=True)  
 			df.drop(df.columns[[0]], axis=1, inplace=True )  

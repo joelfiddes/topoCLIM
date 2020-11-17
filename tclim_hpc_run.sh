@@ -1,6 +1,6 @@
 # Example:
 
-# bash tclim_hpc_run.sh /home/caduff/sim/tclim_ch2/ /home/caduff/sim/ch_tmapp_50/ /home/caduff/sim/raw_cordex 1100
+# bash tclim_hpc_run.sh /home/caduff/sim/tclim_ch2/ /home/caduff/sim/ch_tmapp_100/ /home/caduff/sim/raw_cordex 2100
 
 # Args:
 #	$1: tclim workdir

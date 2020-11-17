@@ -1,7 +1,7 @@
 require(raster)
 require(viridis)
 
-
+dem=raster("/home/joel/sim/qmap/ch_tmapp2/predictors/ele.tif")
 glaciers=shapefile("/home/joel/data/glims/alps/glims_download_17927/glims_polygons.shp")
 gl = crop(glaciers,ch)
 hist_swe = raster("/home/joel/sim/qmap/ch_tmapp2/HIST_2__map.tif")
@@ -96,7 +96,7 @@ mygrey <- colorRampPalette(c("grey0", "grey100"))
 
 require(raster)
 require(viridis)
-dem=raster("/home/joel/sim/qmap/ch_tmapp2/predictors/ele.tif")
+
 shp = 
 hist_gst = raster("/home/joel/sim/qmap/ch_tmapp2/HIST_5__map.tif")
 rcp26near_gst = raster("/home/joel/sim/qmap/ch_tmapp2/RCP26_5_2030-01-01_2050-12-31__map.tif")

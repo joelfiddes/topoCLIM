@@ -6,7 +6,7 @@
 #SBATCH -A node # Account (required)
 #SBATCH -q normal # QOS (required)
 #SBATCH -n 1 # one cores
-#SBATCH -t 01:00:00 # Running time of 2 days
+#SBATCH -t 05:00:00 # Running time of 2 days
 #SBATCH --mem 4000 # Memory request of 4 GB
 #SBATCH -o LOG_qmap.out # Standard output - write the console output to the output folder %A= Job ID, %a = task or Step ID
 #SBATCH -e LOG_qmap.err # Standard error -write errors to the errors folder and
