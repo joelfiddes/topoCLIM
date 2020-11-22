@@ -5,7 +5,7 @@ daily_obs = args[3]
 
 indir=paste0(root, '/s',sample,'/')
 pdf(paste(indir,"evalplot_singleModel_season.pdf"),height=20, width=10)
-par(mfrow=c(8,2))
+par(mfrow=c(6,2))
 require(wesanderson)
 
 
@@ -29,7 +29,7 @@ results_season = qmap_files[ grep('_season_',qmap_files)]
 
 
 # llop thru list of vars
-myvars=c('tas', 'tasmin', 'tasmax','pr', 'ps', 'hurs', 'rsds','rlds', 'uas', 'vas')
+myvars=c( 'tasmin', 'tasmax','pr', 'hurs', 'rsds','rlds' )#, 'uas', 'vas',, 'ps','tas',)
 
 for (var in myvars){
 print(var)
@@ -299,7 +299,7 @@ plot(ecdf(obs_month$x), ylab="cdf",  col=mycol[1], xlab="TA (K)", main=var, lwd=
 lines(ecdf(hist_month_nq[,2]),  col=mycol[2], lwd=lwd)
 lines(ecdf(hist_month_noseas[,2]),  col=mycol[3], lwd=1)
 lines(ecdf(hist_month[,2]),  col='green', lwd=1)
-legend("topright", c("OBS", "CLIM", "CLIM_QM", "CLIM_QMSEASON"), col=c(mycol[1],mycol[2], mycol[3], 'green'),lty=c(1,1,1,1) ,lwd=lwd)
+legend("topleft", c("OBS", "CLIM", "CLIM_QM", "CLIM_QMSEASON"), col=c(mycol[1],mycol[2], mycol[3], 'green'),lty=c(1,1,1,1) ,lwd=lwd)
 
 
 #===============================================================================
