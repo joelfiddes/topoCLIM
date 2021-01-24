@@ -34,8 +34,8 @@ starti = sys.argv[4]
 endi= sys.argv[5]
 namelist = "/home/caduff/src/FSM/nlst_tmapp.txt" # in src directory
 fsmexepath = "/home/caduff/src/FSM/FSM" # version compiled on hyperion
-srcdir = "/home/joel/src/topoCLIM/"
-
+srcdir = "/home/caduff/src/topoCLIM/"
+CORDEXPATH=cordex_dir+"/aresult/"
 #===============================================================================
 # INPUT
 #===============================================================================
@@ -44,7 +44,7 @@ srcdir = "/home/joel/src/topoCLIM/"
 # cordex_dir= "/home/joel/sim/qmap/raw_cordex"
 # starti=1
 # endi = 189
-# CORDEXPATH=cordex_dir+"/aresult/"
+
 
 
 
