@@ -32,19 +32,19 @@ tscale_sim_dir=sys.argv[2]
 cordex_dir=sys.argv[3]
 starti = sys.argv[4]
 endi= sys.argv[5]
-namelist = "/home/joel/src/FSM/nlst_tmapp.txt" # in src directory
-fsmexepath = "/home/joel/src/FSM/FSM" # version compiled on hyperion
+namelist = "/home/caduff/src/FSM/nlst_tmapp.txt" # in src directory
+fsmexepath = "/home/caduff/src/FSM/FSM" # version compiled on hyperion
 srcdir = "/home/joel/src/topoCLIM/"
 
 #===============================================================================
 # INPUT
 #===============================================================================
-wd = '/home/joel/sim/qmap/tclim_points_paper/'
-tscale_sim_dir = "/home/joel/sim/qmap/ch_points_paper/"
-cordex_dir= "/home/joel/sim/qmap/raw_cordex"
-starti=1
-endi = 189
-CORDEXPATH=cordex_dir+"/aresult/"
+# wd = '/home/joel/sim/qmap/tclim_points_paper/'
+# tscale_sim_dir = "/home/joel/sim/qmap/ch_points_paper/"
+# cordex_dir= "/home/joel/sim/qmap/raw_cordex"
+# starti=1
+# endi = 189
+# CORDEXPATH=cordex_dir+"/aresult/"
 
 
 

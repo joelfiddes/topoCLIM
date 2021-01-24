@@ -48,7 +48,7 @@ if ( length(hist_files)==0){print("ERROR! No cordex files found!")}
 # different models have different time spans so need to define common periods where all models have data
 
 # common historical period of models
-startDateHist = "1979-01-01"
+startDateHist = "1980-01-01"
 endDateHist = "2005-12-31"
 
 # common rcp periods of models - perhaps these can/should be 1 set, in practice is the same

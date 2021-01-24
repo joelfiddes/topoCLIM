@@ -15,7 +15,7 @@ require(wesanderson)
 startDateQmap = "1990-01-01"
 endDateQmap = "1999-12-31"
 # common historical period of models
-startDateHist = "1979-01-01"
+startDateHist = "1980-01-01"
 endDateHist = "2005-12-31"
 # obs
 

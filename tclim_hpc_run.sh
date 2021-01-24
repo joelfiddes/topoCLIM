@@ -1,7 +1,7 @@
 # Example:
 
 # bash tclim_hpc_run.sh /home/caduff/sim/tclim_ch2/ /home/caduff/sim/ch_tmapp_100/ /home/caduff/sim/raw_cordex 2100
-
+# bash tclim_hpc_run.sh /home/caduff/sim/tclim_points_paper/ /home/caduff/sim/ch_points_paper/ /home/caduff/sim/raw_cordex 200
 # Args:
 #	$1: tclim workdir
 # 	$2: tmapp workdir
