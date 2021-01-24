@@ -159,7 +159,7 @@ def main(daily_cordex,hourly_obs, mylon, mylat,mytz, slope):
 	dffsm = df_fsm.ffill() # ensure last day of nans (DW,ILWR,P) is filled with last known values (same as other variables, they are just done at the daily level already)
 	
 	#dffsm_3h = dffsm.resample("3H").mean() #dont need know we do inline processing
-	dffsm.to_csv(path_or_buf=outname ,na_rep=-999,float_format='%.4f', header=False, sep='\t', index=False, 
+	dffsm.to_csv(path_or_buf=outname ,na_rep=-999,float_format='%.6f', header=False, sep='\t', index=False, 
 		columns=['year','month','day', 'hour', 'ISWR', 'ILWR', 'Sf', 'Rf', 'TA', 'RH', 'VW', 'P'])
 	print("WRITTEN: "+ outname)
 

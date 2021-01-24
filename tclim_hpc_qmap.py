@@ -39,11 +39,16 @@ CORDEXPATH=cordex_dir+"/aresult/"
 #===============================================================================
 # INPUT
 #===============================================================================
-# wd = '/home/joel/sim/qmap/tclim_points_paper/'
-# tscale_sim_dir = "/home/joel/sim/qmap/ch_points_paper/"
-# cordex_dir= "/home/joel/sim/qmap/raw_cordex"
-# starti=1
-# endi = 189
+wd = '/home/joel/sim/qmap/tclim_points_paper/'
+tscale_sim_dir = "/home/joel/mnt/hyperion/sim/ch_points_paper/"
+cordex_dir= "/home/joel/sim/qmap/raw_cordex"
+starti=188
+endi = 189
+
+namelist = "/home/joel/src/FSM/nlst_tmapp.txt" # in src directory
+fsmexepath = "/home/joel/src/FSM/FSM" # version compiled on hyperion
+srcdir = "/home/joel/src/topoCLIM/"
+CORDEXPATH=cordex_dir+"/aresult/"
 
 
 
@@ -132,6 +137,7 @@ for i in mytasks:
 	hourly_obs= tclim.resamp_1H(tscale_file)
 	# loop over with dissag routine
 
+
 	print("Dissagregate time... ")
 	for daily_cordex in daily_cordex_files:
 		tclim_disagg.main(daily_cordex,hourly_obs,  str(lp.lon[i]), str(lp.lat[i]), str(lp.tz[i]), str(lp.slp[i]))
@@ -141,7 +147,6 @@ for i in mytasks:
 	print("FSM sim... ")
 	for meteofile in meteofiles:
 		tclim.fsm_sim(meteofile,namelist,fsmexepath)
-
 
 
 	#tclim.findDelete(wd+"/s"+sample+ "/fsm", dir=True)
