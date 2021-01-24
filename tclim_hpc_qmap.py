@@ -20,7 +20,7 @@ import sys
 import os
 import glob
 import subprocess
-import logging
+
 import tclim_src as tclim
 import tclim_disagg
 import pandas as pd
@@ -32,33 +32,37 @@ tscale_sim_dir=sys.argv[2]
 cordex_dir=sys.argv[3]
 starti = sys.argv[4]
 endi= sys.argv[5]
-namelist = "/home/caduff/src/topoCLIM/nlst.txt" # in src directory
-fsmexepath = "/home/caduff/src/FSM/FSM" # version compiled on hyperion
-srcdir = "/home/caduff/src/topoCLIM/"
+namelist = "/home/joel/src/FSM/nlst_tmapp.txt" # in src directory
+fsmexepath = "/home/joel/src/FSM/FSM" # version compiled on hyperion
+srcdir = "/home/joel/src/topoCLIM/"
+
 #===============================================================================
 # INPUT
 #===============================================================================
-#wd = '/home/joel/sim/qmap/topoclim_ch/'
-#tscale_sim_dir = "/home/joel/sim/qmap/ch_tmapp2/"
+wd = '/home/joel/sim/qmap/tclim_points_paper/'
+tscale_sim_dir = "/home/joel/sim/qmap/ch_points_paper/"
+cordex_dir= "/home/joel/sim/qmap/raw_cordex"
+starti=1
+endi = 189
 CORDEXPATH=cordex_dir+"/aresult/"
-jobid = os.getenv('SLURM_ARRAY_TASK_ID')
+
 
 
 
 # =========================================================================
 #	Log
 # =========================================================================
-logfile = wd+ "/logs/logfile_qmap"+str(jobid)
-if os.path.isfile(logfile) == True:
-    os.remove(logfile)
+# logfile = wd+ "/logs/logfile_qmap"+str(jobid)
+# if os.path.isfile(logfile) == True:
+#     os.remove(logfile)
 
 
-# to clear logger: https://stackoverflow.com/questions/30861524/logging-basicconfig-not-creating-log-file-when-i-run-in-pycharm
-for handler in logging.root.handlers[:]:
-    logging.root.removeHandler(handler)
+# # to clear logger: https://stackoverflow.com/questions/30861524/logging-basicconfig-not-creating-log-file-when-i-run-in-pycharm
+# for handler in logging.root.handlers[:]:
+#     logging.root.removeHandler(handler)
 
-logging.basicConfig(level=logging.DEBUG, filename=logfile,filemode="a+",format="%(asctime)-15s %(levelname)-8s %(message)s")
-logging.info("Run script = " + os.path.basename(__file__))
+# logging.basicConfig(level=logging.DEBUG, filename=logfile,filemode="a+",format="%(asctime)-15s %(levelname)-8s %(message)s")
+# logging.info("Run script = " + os.path.basename(__file__))
 
 #===============================================================================
 # KODE
@@ -69,7 +73,7 @@ logging.info("Run script = " + os.path.basename(__file__))
 # get grid box
 lp = pd.read_csv(tscale_sim_dir + "/listpoints.txt")
 
-logging.info("Computing qmap files " + str(range(int(starti)-1,int(endi)) ) )
+print("Computing qmap files " + str(range(int(starti)-1,int(endi)) ) )
 
 # find all tscale file excluding 1H and 1D ones
 tscale_files = sorted(glob.glob(tscale_sim_dir+"/out/"+ "tscale*"))
@@ -93,10 +97,12 @@ def natural_keys(text):
 tscale_files.sort(key=natural_keys)
 
 mytasks = range(int(starti)-1,int(endi))
+
 for i in mytasks:
 
+
 	tscale_file = tscale_files[i]
-	logging.info("qmap " + tscale_file)
+
 	print("qmap " + tscale_file)
 	
 	daily_obs = tclim.resamp_1D(tscale_file)
@@ -106,16 +112,16 @@ for i in mytasks:
 		print(tscale_file + " done!")
 		continue
 
-	logging.info("qmap... ")
-	cmd = ["Rscript", "qmap_hour_plots_daily.R", wd ,str(sample),  daily_obs, str(lp.lon[i]), str(lp.lat[i]), CORDEXPATH]
+	print("qmap... ")
+	cmd = ["Rscript", "qmap_hour_plots_daily_12.R", wd ,str(sample),  daily_obs, str(lp.lon[i]), str(lp.lat[i]), CORDEXPATH]
 	subprocess.check_output(cmd)
 
-	logging.info("Aggregate results... ")
+	print("Aggregate results... ")
 	cmd = ["Rscript", "aggregate_qmap_results.R", wd ,str(sample)]
 	subprocess.check_output(cmd)
 
 	cmd = ["Rscript", "qmap_plots.R", wd ,str(sample),  daily_obs]
-	#subprocess.check_output(cmd)
+	subprocess.check_output(cmd)
 
 	# cleanup
 	tclim.findDelete(wd+"/s"+sample+ "/aqmap_results", dir=True)
@@ -126,19 +132,20 @@ for i in mytasks:
 	hourly_obs= tclim.resamp_1H(tscale_file)
 	# loop over with dissag routine
 
-	logging.info("Dissagregate time... ")
+	print("Dissagregate time... ")
 	for daily_cordex in daily_cordex_files:
 		tclim_disagg.main(daily_cordex,hourly_obs,  str(lp.lon[i]), str(lp.lat[i]), str(lp.tz[i]), str(lp.slp[i]))
 
 
 	meteofiles = (sorted(glob.glob(wd+"/s"+sample+ "/fsm/*F.txt")))
-	logging.info("FSM sim... ")
+	print("FSM sim... ")
 	for meteofile in meteofiles:
 		tclim.fsm_sim(meteofile,namelist,fsmexepath)
 
 
 
-	tclim.findDelete(wd+"/s"+sample+ "/fsm", dir=True)
+	#tclim.findDelete(wd+"/s"+sample+ "/fsm", dir=True)
+	tclim.findDelete(wd+"/s"+sample+ "/fsm/*Q_F.txt", dir=False)
 	f = open(wd+ '/s'+sample+"/QSUCCESS", "w")
 	os.chdir(srcdir)
 

@@ -9,7 +9,7 @@ domain='EUR-44'
 time_frequency='day' #3hr' #
 ts_dir=outdir+"aresult/"
 era5spatialRef = "/home/joel/sim/qmap/GR_data/spatial/idPoly.shp"
-era5spatialRef = "/home/joel/sim/qmap/ch_tmapp2/spatial/idPoly.shp"
+era5spatialRef = "/home/joel/sim/qmap/raw_cordex/spatial/idPoly.shp"
 
 # define domain here based on era5 domain
 era5ref = gpd.read_file(era5spatialRef).total_bounds 

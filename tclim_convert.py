@@ -375,7 +375,6 @@ plt.figure()
 ax = plt.gca()
 
 #era5_year.plot(color='grey') something wri=ong with this as biased where qmapped datra that depends on this is good!
-
 optim_year['HS'][optim_year['HS']<0] = np.nan
 wfj_HS = optim_year['HS'][0:-1] # drop incomplete 2019
 wfj_HS.name="HS_obs" 
@@ -396,6 +395,9 @@ ax.set_ylabel('mean annual snow height (m)')
 
 plt.legend()
 plt.show()
+
+
+
 
 
 

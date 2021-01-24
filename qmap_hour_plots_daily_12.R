@@ -214,34 +214,29 @@ print(var)
 		hist_nqmap[[modelChain]] <- list(hist_cp)
 
 		# do seasonal qmap
+
+		# 12 mnth
 		month_cp = substring(cordex_dates_cp,6,7)
-		summer_index=which( month_cp=="06"| month_cp=="07"| month_cp=="08")
-		autumn_index=which(month_cp=="09"| month_cp=="10"| month_cp=="11")
-		winter_index=which(month_cp=="12"| month_cp=="01"| month_cp=="02")
-		spring_index=which(month_cp=="03"| month_cp=="04"| month_cp=="05")
-		
-		pars_summer = fitQmap(obs_qmap_period[summer_index],hist_qmap_period[summer_index], method = "QUANT")
-		pars_autumn = fitQmap(obs_qmap_period[autumn_index],hist_qmap_period[autumn_index], method = "QUANT")
-		pars_winter = fitQmap(obs_qmap_period[winter_index],hist_qmap_period[winter_index], method = "QUANT")
-		pars_spring = fitQmap(obs_qmap_period[spring_index],hist_qmap_period[spring_index], method = "QUANT")
-
-		hist_summer = doQmap(hist_cp[summer_index],pars_summer)
-		hist_autumn = doQmap(hist_cp[autumn_index],pars_autumn)
-		hist_winter= doQmap(hist_cp[winter_index],pars_winter)
-		hist_spring = doQmap(hist_cp[spring_index],pars_spring)
-
 		hist_season<-1:length(hist_cp)
-		hist_season[summer_index]<-hist_summer
-		hist_season[autumn_index]<-hist_autumn
-		hist_season[winter_index]<-hist_winter
-		hist_season[spring_index]<-hist_spring
+		for (month in 1:12){
+			monthF = formatC(month, width=2, flag="0")
+			#print(monthF)
+			summer_index=which( month_cp==monthF)
+			#print(summer_index[1])
+			pars_summer = fitQmap(obs_qmap_period[summer_index],hist_qmap_period[summer_index], method = "QUANT")
+			#print(pars_summer$par$modq[1])
+			hist_summer = doQmap(hist_cp[summer_index],pars_summer)
+			print(length(hist_summer))
+			
+			hist_season[summer_index]<-hist_summer
+			hist_qmap_list[[modelChain]][[monthF]]<-pars_summer
 
-		hist_qmap_season_list[[modelChain]] <- list(hist_season)
-		hist_qmap_list[[modelChain]][['pars']]<-pars 
-		hist_qmap_list[[modelChain]][['pars_summer']]<-pars_summer
-		hist_qmap_list[[modelChain]][['pars_autumn']]<-pars_autumn 
-		hist_qmap_list[[modelChain]][['pars_winter']]<-pars_winter 
-		hist_qmap_list[[modelChain]][['pars_spring']]<-pars_spring 
+			}
+			hist_qmap_season_list[[modelChain]] <- list(hist_season)
+			hist_qmap_list[[modelChain]][['pars']]<-pars 
+	
+
+
 		}
 
 	hist_qmap_list_NOPARS = lapply(hist_qmap_list, `[[`, 1)
@@ -316,12 +311,8 @@ print(var)
 		greg_cal_rcp  = as.Date(datesPl)
 
 
-
 		# extract variable
-
 		if(any(is.na(tas)==TRUE)){print(paste0("no data found in variable, skipping this file", rcp26_file));next}
-
-
 
 		# do qmap
 		rcp26_qmapped = doQmap(tas, hist_qmap_list[[modelChain]][['pars']] )
@@ -336,26 +327,28 @@ print(var)
 
 		# create seasonal indexes
 		month_cp = substring(greg_cal_rcp,6,7)
-		summer_index=which( month_cp=="06"| month_cp=="07"| month_cp=="08")
-		autumn_index=which(month_cp=="09"| month_cp=="10"| month_cp=="11")
-		winter_index=which(month_cp=="12"| month_cp=="01"| month_cp=="02")
-		spring_index=which(month_cp=="03"| month_cp=="04"| month_cp=="05")
-
-		# do seasonal qmap
-		rcp26_summer = doQmap(tas[summer_index], hist_qmap_list[[modelChain]][['pars_summer']] )
-		rcp26_autumn = doQmap(tas[autumn_index], hist_qmap_list[[modelChain]][['pars_autumn']] )
-		rcp26_winter= doQmap(tas[winter_index], hist_qmap_list[[modelChain]][['pars_winter']] )
-		rcp26_spring = doQmap(tas[spring_index], hist_qmap_list[[modelChain]][['pars_winter']])
-
 		rcp26_season<-1:length(rcp26_qmapped)
-		rcp26_season[summer_index]<-rcp26_summer
-		rcp26_season[autumn_index]<-rcp26_autumn
-		rcp26_season[winter_index]<-rcp26_winter
-		rcp26_season[spring_index]<-rcp26_spring
+		# do seasonal qmap
 
-		rcp26_qmap_season_list[[modelChain]] <- list(rcp26_season[si:ei])
+		for (month in 1:12){
+			monthF = formatC(month, width=2, flag="0")
+			summer_index=which( month_cp==monthF)
+			rcp26_summer = doQmap(tas[summer_index], hist_qmap_list[[modelChain]][[monthF]] )
+
+			
+			rcp26_season[summer_index]<-rcp26_summer
+			
+			}
+			rcp26_qmap_season_list[[modelChain]] <- list(rcp26_season[si:ei])
+
 		}
 		
+	
+
+
+
+
+
 
 	mydata=rcp26_qmap_list
 	modelNames = names(mydata)
@@ -440,24 +433,16 @@ print(var)
 	
 		# create seasonal indexes
 		month_cp = substring(greg_cal_rcp,6,7)
-		summer_index=which( month_cp=="06"| month_cp=="07"| month_cp=="08")
-		autumn_index=which(month_cp=="09"| month_cp=="10"| month_cp=="11")
-		winter_index=which(month_cp=="12"| month_cp=="01"| month_cp=="02")
-		spring_index=which(month_cp=="03"| month_cp=="04"| month_cp=="05")
-
-		# do seasonal qmap
-		rcp85_summer = doQmap(tas[summer_index], hist_qmap_list[[modelChain]][['pars_summer']] )
-		rcp85_autumn = doQmap(tas[autumn_index], hist_qmap_list[[modelChain]][['pars_autumn']] )
-		rcp85_winter= doQmap(tas[winter_index], hist_qmap_list[[modelChain]][['pars_winter']] )
-		rcp85_spring = doQmap(tas[spring_index], hist_qmap_list[[modelChain]][['pars_winter']])
-
 		rcp85_season<-1:length(rcp85_qmapped)
-		rcp85_season[summer_index]<-rcp85_summer
-		rcp85_season[autumn_index]<-rcp85_autumn
-		rcp85_season[winter_index]<-rcp85_winter
-		rcp85_season[spring_index]<-rcp85_spring
 
-		rcp85_qmap_season_list[[modelChain]] <- list(rcp85_season[si:ei])
+			for (month in 1:12){
+			monthF = formatC(month, width=2, flag="0")
+			summer_index=which( month_cp==monthF)
+			rcp85_summer = doQmap(tas[summer_index], hist_qmap_list[[modelChain]][[monthF]] )
+			rcp85_season[summer_index]<-rcp85_summer
+			}
+			rcp85_qmap_season_list[[modelChain]] <- list(rcp85_season[si:ei])
+
 		}
 
 

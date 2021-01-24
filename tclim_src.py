@@ -154,12 +154,13 @@ def resamp_1D(path_inpt, freq='1D'):# create 1h wfj era5 obs data by
 
 	df_1d = df.resample(freq).mean()
 
-	TAMIN = df_1d.iloc[:,4]  .resample(freq).min()
-	TAMAX = df_1d.iloc[:,4]  .resample(freq).max()
+	TAMIN = df_1d.iloc[:,4].resample(freq).min()
+	TAMAX = df_1d.iloc[:,4].resample(freq).max()
 	df_1d['TAMAX']  =TAMAX
 	df_1d['TAMIN']  =TAMIN
+	df_1d['Pr'] = df_1d.iloc[:,3]+df_1d.iloc[:,2] # add snow rain fraction to get total precip.
 	df_1d.to_csv(path_or_buf=path_inpt.split('.')[0]  + '_'+freq+'.csv' ,na_rep=-999,float_format='%.6f', 
-		header=['ISWR', 'ILWR', 'Sf', 'Rf', 'TA', 'RH', 'VW', 'P','TAMAX','TAMIN'], sep=',')
+		header=['ISWR', 'ILWR', 'Sf', 'Rf', 'TA', 'RH', 'VW', 'P','TAMAX','TAMIN','Pr'], sep=',')
 	return(path_inpt.split('.')[0]  + '_'+freq+'.csv')
 
 
@@ -504,6 +505,47 @@ def fsm_sim(meteofile, namelist, fsmexepath):
 # 	save_file = FSMPATH + '/output/'+METEOFILENAME+'_'+config+'.txt'
 # 	os.system('mv '+out_file+' '+save_file)
 # 		#os.system('rm nlst.txt')
+
+def fsm_sim2(meteofile, namelist, fsmexepath, nave):
+	# fsm executable must exist in indir
+	#print(meteofile)
+	# constraint is that Fortran struggles with long strings 
+	# such as an absolute filepath, thats why need to do awkrawd stuff to make sure relative path works
+	METEOFILENAME = os.path.split(meteofile)[1]
+	METEOFILEPATH = os.path.split(meteofile)[0]
+	FSMPATH = os.path.split(METEOFILEPATH)[0] 
+	if not os.path.exists(FSMPATH+"/FSM"): 
+		os.system("cp "+fsmexepath +" " +FSMPATH)
+	os.chdir(FSMPATH)
+	try:
+		os.mkdir(FSMPATH+'/fsm_sims')
+	except:
+		pass
+
+
+	#for n in 31: #range(32):
+	n=31
+	config = np.binary_repr(n, width=5)
+	#print('Running FSM configuration ',config,n)
+	f = open('nlst_'+METEOFILENAME+'.txt', 'w')
+	out_file = 'out_'+METEOFILENAME+'.txt'
+
+	with open(namelist) as file:
+		for line in file:
+			f.write(line)
+			if 'config' in line:
+				f.write('  nconfig = '+str(n)+'\n')
+			if 'drive' in line:
+				f.write('  met_file = ' +"'./out/"+METEOFILENAME+"'"+'\n')
+			if 'output' in line:
+				f.write('  out_file = '+"'./fsm_sims/fsm_"+METEOFILENAME+".txt'"+'\n')
+				f.write('  Nave = '+str(nave)+'\n')
+ 		#	f.write(line.replace('out_file', '  out_file = '+"'./fsm_sims/fsm_"+METEOFILENAME+".txt'"+'\n'))
+
+	f.close()
+
+	os.system('./FSM < nlst_'+METEOFILENAME+'.txt')
+	os.remove('nlst_'+METEOFILENAME+'.txt')
 
 
 def tclim_main(tscale_file, mylon, mylat, mytz, slope):

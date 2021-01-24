@@ -1,9 +1,9 @@
 args = commandArgs(trailingOnly=TRUE)
-root = args[1]
+wd = args[1]
 sample = args[2]
 daily_obs = args[3]
 
-indir=paste0(root, '/s',sample,'/')
+indir=paste0(wd, '/s',sample,'/')
 pdf(paste(indir,"evalplot_singleModel_season.pdf"),height=20, width=10)
 par(mfrow=c(6,2))
 require(wesanderson)
@@ -29,28 +29,34 @@ results_season = qmap_files[ grep('_season_',qmap_files)]
 
 
 # llop thru list of vars
-myvars=c( 'tasmin', 'tasmax','pr', 'hurs', 'rsds','rlds' )#, 'uas', 'vas',, 'ps','tas',)
+myvars=c('tas' , 'tasmin', 'tasmax','pr', 'hurs', 'rsds','rlds' ,  'ps') #'uas', 'vas',
 
 for (var in myvars){
 print(var)
 
 
+	# if(var=="tas"){obsindex <-11; convFact <-1} # K
+	# if(var=="tasmin"){obsindex <-14; convFact <-1} # K
+	# if(var=="tasmax"){obsindex <-13; convFact <-1} # K
+	# 	if(var=="pr"){obsindex <-6; convFact <-(1/3600)} # kgm-2s-1 obs are in mean mm/hr for that day convert to mm/s (cordex)
+	# 		if(var=="ps"){obsindex <-5; convFact <-1}# Pa
+	# 			if(var=="hurs"){obsindex <-8; convFact <-100} # % 0-100
+	# 				if(var=="rsds"){obsindex <-4; convFact <-1}	# Wm-2
+	# 					if(var=="rlds"){obsindex <-3; convFact <-1}# Wm-2
+	# 						if(var=="uas"){obsindex <-2; convFact <-1}# ms-1
+	# 							if(var=="vas"){obsindex <-2; convFact <-1}# ms-1
 
-#for (var in myvars){
-
-
-
-
-	if(var=="tas"){obsindex <-11; convFact <-1} # K
-	if(var=="tasmin"){obsindex <-14; convFact <-1} # K
-	if(var=="tasmax"){obsindex <-13; convFact <-1} # K
-		if(var=="pr"){obsindex <-6; convFact <-(1/3600)} # kgm-2s-1 obs are in mean mm/hr for that day convert to mm/s (cordex)
-			if(var=="ps"){obsindex <-5; convFact <-1}# Pa
-				if(var=="hurs"){obsindex <-8; convFact <-100} # % 0-100
-					if(var=="rsds"){obsindex <-4; convFact <-1}	# Wm-2
-						if(var=="rlds"){obsindex <-3; convFact <-1}# Wm-2
-							if(var=="uas"){obsindex <-2; convFact <-1}# ms-1
-								if(var=="vas"){obsindex <-2; convFact <-1}# ms-1
+	if(var=="tas"){obsindex <-6; convFact <-1; xlab <- "Mean daily air temperature [K]"} # K
+	if(var=="tasmin"){obsindex <-11; convFact <-1;  xlab <- "Min daily air temperature [K]"} # K
+	if(var=="tasmax"){obsindex <-10; convFact <-1 ;  xlab <- "Max daily air temperature [K]"} # K
+		if(var=="pr"){obsindex <-12; convFact <-(1);  xlab <- "Mean daily precipitation rate [Kg m-2 s-1]"} # kgm-2s-1 obs are in mean mm/hr for that day convert to mm/s (cordex)
+			if(var=="ps"){obsindex <-9; convFact <-1 ;  xlab <- "Mean daily air pressure [Pa]" }# Pa
+				if(var=="hurs"){obsindex <-7; convFact <-1;  xlab <- "Mean daily relative humidity [%]" } # % 0-100
+					if(var=="rsds"){obsindex <-2; convFact <-1 ;  xlab <- "Mean daily incoming shortwave radiation [W m-2]"}	# Wm-2
+						if(var=="rlds"){obsindex <-3; convFact <-1 ;  xlab <- "Mean daily incoming longwave radiation [W m-2]"}# Wm-2
+							if(var=="uas"){obsindex <-8; convFact <-1}# ms-1
+								if(var=="vas"){obsindex <-8; convFact <-1}# ms-1
+								# where is DW?
 
 	# read and convert obs unit
 	obs_var=obs[,obsindex]*convFact	
@@ -80,14 +86,6 @@ print(var)
 	end_obs=which(obs_datetime==endDateHist)
 	obs_cp_period= obs_var[start_obs: end_obs]
 	obs_cp_dates = obs_datetime[start_obs: end_obs]
-
-
-
-
-
-
-
-
 
 # filenames
 load(results_season [grep(paste0('hist.*',var,'$'),results_season) ] )
@@ -295,7 +293,7 @@ obs_month = aggregate(obs_cp_period, list(months_obs), mean)
 # ecdf
 #===============================================================================
 lwd=3
-plot(ecdf(obs_month$x), ylab="cdf",  col=mycol[1], xlab="TA (K)", main=var, lwd=lwd,lty=1)
+plot(ecdf(obs_month$x), ylab="cdf",  col=mycol[1], xlab=xlab, main=var, lwd=lwd,lty=1)
 lines(ecdf(hist_month_nq[,2]),  col=mycol[2], lwd=lwd)
 lines(ecdf(hist_month_noseas[,2]),  col=mycol[3], lwd=1)
 lines(ecdf(hist_month[,2]),  col='green', lwd=1)
@@ -333,7 +331,7 @@ hist_doy_nq$MEAN=apply(hist_doy_nq[,2:(dim(hist_doy_nq)[2]-1)],1, mean, na.rm = 
 
 #
 #pdf(paste(outdir,var,"DOY2.pdf"))
-plot(obs_doy$x, type='l',col=mycol[1],lwd=lwd,lty=2, xlab='DOY', ylab='Air temperature [k]', main=var)
+plot(obs_doy$x, type='l',col=mycol[1],lwd=lwd,lty=2, xlab='DOY', ylab=xlab, main=var)
 lines(hist_doy_nq$MEAN, type='l', col=mycol[2], lwd=lwd)
 lines(hist_doy_noseas$MEAN ,type='l', col=mycol[3],lwd=lwd)
 lines(hist_doy$MEAN, type='l', col='green',lwd=lwd)

@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO, filename=outdir+"logfile", filemode="w",
                         format="%(asctime)-15s %(levelname)-8s %(message)s")
 # variables
 vars=['hurs', 'tasmin', 'tasmax', 'uas', 'vas', 'tas', 'pr', 'ps', 'rsds','rlds']#,'sfcWind'
-expers=['historical','rcp26', 'rcp85']
+expers=['rcp26', 'historical', 'rcp85']
 # define domain here (once figured out rlat/lon translation):
 # lonE = 5
 # lonW = 11
