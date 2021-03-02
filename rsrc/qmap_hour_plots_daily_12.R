@@ -9,7 +9,7 @@ require(ncdf4)
 	# indir="/home/joel/sim/qmap/topoclim_test" 
 
 # Example:
-	# Rscript', 'qmap_hour_plots_daily.R', '/home/joel/sim/qmap/tclim_points/', 'tscale_1_1D', '/home/joel/sim/qmap/tscale_points//out/tscale_1_1D.csv', '9.809', '46.83', '/home/joel/sim/qmap/raw_cordex/aresult/'
+	# Rscript', '/home/caduff/sim/tclim_points_paper2/', '/home/joel/sim/qmap/tclim_points/', 'tscale_1_1D', '/home/caduff/sim/ch_points_paper/out/tscale_1_1D.csv', '9.809', '46.83', '/home/joel/sim/qmap/raw_cordex/aresult/'
 
 args = commandArgs(trailingOnly=TRUE)
 wd = args[1]
@@ -19,12 +19,12 @@ mylon = as.numeric(args[4])
 mylat = as.numeric(args[5])
 CORDEXPATH = args[6]
 
-# wd='/home/joel/sim/qmap/tclim_points/'
+# wd='/home/joel/sim/qmap/tclim_wfj/'
 # sample = "tscale_1_1D"
-# daily_obs ='/home/joel/sim/qmap/tscale_points//out/tscale_1_1D.csv'
+# daily_obs ='/home/joel/sim/qmap/PAPER_RESULTS/wfj_eval2/out/tscale_1_1D.csv'
 # mylon = 9.809
 # mylat = 46.83
-# CORDEXPATH='/home/joel/sim/qmap/raw_cordex/aresult/'
+# CORDEXPATH='/home/joel/sim/qmap/raw_cordex/aresult_current/'
 
 # linearly resample 3h era5 to 1h and cpture path as variable
 #daily_obs = system2(command = "python", args = paste( "resample_timeseries.py" , path_inp), stdout=TRUE)

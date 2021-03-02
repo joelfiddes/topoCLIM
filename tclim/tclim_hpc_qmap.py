@@ -39,16 +39,18 @@ CORDEXPATH=cordex_dir+"/aresult/"
 #===============================================================================
 # INPUT
 #===============================================================================
-wd = '/home/joel/sim/qmap/tclim_points_paper/'
-tscale_sim_dir = "/home/joel/mnt/hyperion/sim/ch_points_paper/"
-cordex_dir= "/home/joel/sim/qmap/raw_cordex"
-starti=188
-endi = 189
 
-namelist = "/home/joel/src/FSM/nlst_tmapp.txt" # in src directory
-fsmexepath = "/home/joel/src/FSM/FSM" # version compiled on hyperion
-srcdir = "/home/joel/src/topoCLIM/"
-CORDEXPATH=cordex_dir+"/aresult/"
+# !!!settings for figure 3!!!
+# wd = '/home/joel/sim/qmap/tclim_points_paper/'
+# tscale_sim_dir = "/home/joel/mnt/hyperion/sim/ch_points_paper/"
+# cordex_dir= "/home/joel/sim/qmap/raw_cordex"
+# starti=188
+# endi = 189
+
+# namelist = "/home/joel/src/FSM/nlst_tmapp.txt" # in src directory
+# fsmexepath = "/home/joel/src/FSM/FSM" # version compiled on hyperion
+# srcdir = "/home/joel/src/topoCLIM/"
+# CORDEXPATH=cordex_dir+"/aresult_current/"
 
 
 
@@ -118,14 +120,14 @@ for i in mytasks:
 		continue
 
 	print("qmap... ")
-	cmd = ["Rscript", "qmap_hour_plots_daily_12.R", wd ,str(sample),  daily_obs, str(lp.lon[i]), str(lp.lat[i]), CORDEXPATH]
+	cmd = ["Rscript", "./rsrc/qmap_hour_plots_daily_12.R", wd ,str(sample),  daily_obs, str(lp.lon[i]), str(lp.lat[i]), CORDEXPATH]
 	subprocess.check_output(cmd)
 
 	print("Aggregate results... ")
-	cmd = ["Rscript", "aggregate_qmap_results.R", wd ,str(sample)]
+	cmd = ["Rscript", "./rsrc/aggregate_qmap_results.R", wd ,str(sample)]
 	subprocess.check_output(cmd)
 
-	cmd = ["Rscript", "qmap_plots.R", wd ,str(sample),  daily_obs]
+	cmd = ["Rscript", "./rsrc/qmap_plots.R", wd ,str(sample),  daily_obs]
 	subprocess.check_output(cmd)
 
 	# cleanup

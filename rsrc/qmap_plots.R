@@ -5,7 +5,7 @@ daily_obs = args[3]
 
 indir=paste0(wd, '/s',sample,'/')
 pdf(paste(indir,"evalplot_singleModel_season.pdf"),height=20, width=10)
-par(mfrow=c(6,2))
+par(mfrow=c(5,2))
 require(wesanderson)
 
 
@@ -14,9 +14,18 @@ require(wesanderson)
 # the period to do quantile mapping over (obs and sim must overlap!)
 startDateQmap = "1990-01-01"
 endDateQmap = "1999-12-31"
+
 # common historical period of models
 startDateHist = "1980-01-01"
 endDateHist = "2005-12-31"
+
+
+startDateQmap = "1990-01-01"
+endDateQmap = "1999-12-31"
+# common historical period of models
+startDateHist = "1980-01-01"
+endDateHist = "2005-12-31"
+
 # obs
 
 obs=read.csv(daily_obs)
@@ -29,7 +38,7 @@ results_season = qmap_files[ grep('_season_',qmap_files)]
 
 
 # llop thru list of vars
-myvars=c('tas' , 'tasmin', 'tasmax','pr', 'hurs', 'rsds','rlds' ,  'ps') #'uas', 'vas',
+myvars=c('tas' ,'pr', 'rsds','rlds' , 'hurs')#, 'ps','uas')
 
 for (var in myvars){
 print(var)
@@ -164,41 +173,45 @@ obs_year = aggregate(obs_cp_period, list(years_obs), mean)
 #===envelope plots========================================================================
 if (var == 'tas'){
 
-	pdf(paste(indir,var,"TS2.pdf"))
+	pdf(paste0(indir,var,"TS2.pdf"))
 	# caption: Mean annual near surface air temperature at the Weissfluhjoch (2540m asl)  showing corrected historical, RCP2.6 and RCP8.5 timseries. Observations and uncorrected historical data are also shown for comparison. The coloured envelops indicate +/- 1 SD of the model spread and multi-modal mean is given by the bold line.
 	lwd=3
-	plot(rcp26_year$Group.1, rcp26_year$MEAN, xlim=c(1979,2100),ylim=c(270,280), type='l', col=mycol[1], lwd=lwd, ylab="Air temperacture (K)", xlab=" ")
+	plot(rcp26_year$Group.1, rcp26_year$MEAN-273.15, xlim=c(1979,2100),ylim=c(270-273.15,280-273.15), type='l', col="white", lwd=lwd, ylab="Air temperature (°C)", xlab=" ")
 
 
-	y = c(rcp26_year$MEAN- rcp26_year$SD,rev(rcp26_year$MEAN+ rcp26_year$SD))
-	x=c((rcp26_year$Group.1),rev(rcp26_year$Group.1))
-	polygon (x,y, col=rgb(0, 0, 1,0.5),border='NA')
+ 	y = c(rcp26_year$MEAN-273.15- rcp26_year$SD,rev(rcp26_year$MEAN-273.15+ rcp26_year$SD))
+ 	x=c((rcp26_year$Group.1),rev(rcp26_year$Group.1))
+ 	polygon (x,y, col=rgb(0, 0, 1,0.3),border='NA')
+ lines(rcp26_year$Group.1, rcp26_year$MEAN-273.15, ylim=c(270-273.15,280-273.15), type='l', col=mycol[1],lwd=lwd,lty=1)
+ lines(rcp26_year_nq$Group.1, rcp26_year_nq$MEAN-273.15, ylim=c(270-273.15,280-273.15), type='l', col=mycol[1],lwd=lwd,lty=2)
+
+ 	lines(rcp85_year$Group.1, rcp85_year$MEAN-273.15, ylim=c(270-273.15,280-273.15), type='l', col=mycol[3],lwd=lwd)
+ 	y = c(rcp85_year$MEAN-273.15- rcp85_year$SD,rev(rcp85_year$MEAN-273.15+ rcp85_year$SD))
+ 	x=c((rcp85_year$Group.1),rev(rcp85_year$Group.1))
+ 	polygon (x,y, col=rgb(1, 0, 0,0.3),border='NA')
+ lines(rcp85_year_nq$Group.1, rcp85_year_nq$MEAN-273.15, ylim=c(270-273.15,280-273.15), type='l', col=mycol[3],lwd=lwd,lty=2)
+
+	
+	y = c(hist_year$MEAN-273.15- hist_year$SD,rev(hist_year$MEAN-273.15+ hist_year$SD))
+ 	x=c((hist_year$Group.1),rev(hist_year$Group.1))
+ 	polygon (x,y, col=rgb(0, 1, 0,0.3),border='NA')
+ 	lines(hist_year$Group.1, hist_year$MEAN-273.15, ylim=c(270-273.15,280-273.15), type='l', col=mycol[2],lwd=lwd)
 
 
-	lines(rcp85_year$Group.1, rcp85_year$MEAN, ylim=c(270,280), type='l', col=mycol[3],lwd=lwd)
-	y = c(rcp85_year$MEAN- rcp85_year$SD,rev(rcp85_year$MEAN+ rcp85_year$SD))
-	x=c((rcp85_year$Group.1),rev(rcp85_year$Group.1))
-	polygon (x,y, col=rgb(1, 0, 0,0.5),border='NA')
-
-
-	lines(hist_year$Group.1, hist_year$MEAN, ylim=c(270,280), type='l', col=mycol[2],lwd=lwd)
-	y = c(hist_year$MEAN- hist_year$SD,rev(hist_year$MEAN+ hist_year$SD))
-	x=c((hist_year$Group.1),rev(hist_year$Group.1))
-	polygon (x,y, col=rgb(0, 1, 0,0.5),border='NA')
-
-	lines(hist_year_nq, ylim=c(270,280), type='l', col=mycol[2],lwd=lwd,lty=2)
-	lines(obs_year,lwd=lwd)
-	legend("bottomright", c("Hist", "RCP2.6", "RCP8.5", "Hist_uncorrected", "OBS"), col=c(rgb(0, 1, 0),mycol[1],mycol[3],mycol[2], "black"),lty=c(1,1,1,2,1),lwd=3)
+	lines(hist_year$Group.1, hist_year_nq$MEAN-273.15, type='l', col=mycol[2],lwd=lwd,lty=2)
+ 	lines(obs_year$Group.1 , obs_year$x-273.15,lwd=lwd, lty=1, col="grey31")
+ 	abline(h=0, col="grey31")
+ 	legend("topleft", c("Hist","Hist_raw", "RCP2.6", "RCP2.6_raw", "RCP8.5" ,"RCP8.5_raw",  "T-MET"), col=c(mycol[1],mycol[1], mycol[1],mycol[1],mycol[3],mycol[3], "grey31"),lty=c(1,2,1,2,1,2,1),lwd=3)
 	dev.off()
 
 }
 
 if (var == 'tas'){
 
-	pdf(paste(indir,var,"TS2_NOQMAP.pdf"))
+	pdf(paste0(indir,var,"TS2_NOQMAP.pdf"))
 	# caption: Mean annual near surface air temperature at the Weissfluhjoch (2540m asl)  showing corrected historical, RCP2.6 and RCP8.5 timseries. Observations and uncorrected historical data are also shown for comparison. The coloured envelops indicate +/- 1 SD of the model spread and multi-modal mean is given by the bold line.
 	lwd=3
-	plot(rcp26_year$Group.1, rcp26_year$MEAN, xlim=c(1979,2100),ylim=c(270,280), type='l', col=mycol[1], lwd=lwd, ylab="Air temperacture (K)", xlab=" ")
+	plot(rcp26_year$Group.1, rcp26_year$MEAN, xlim=c(1979,2100),ylim=c(270,280), type='l', col=mycol[1], lwd=lwd, ylab="Air temperature (K)", xlab=" ")
 	lines(rcp26_year_nq$Group.1, rcp26_year_nq$MEAN, ylim=c(270,280), type='l', col=mycol[1],lwd=lwd,lty=2)
 
 	lines(rcp85_year$Group.1, rcp85_year$MEAN, ylim=c(270,280), type='l', col=mycol[3],lwd=lwd)
@@ -208,7 +221,7 @@ if (var == 'tas'){
 	lines(hist_year$Group.1, hist_year$MEAN, ylim=c(270,280), type='l', col=mycol[2],lwd=lwd)
 	lines(hist_year_nq, ylim=c(270,280), type='l', col=mycol[2],lwd=lwd,lty=2)
 	lines(obs_year,lwd=lwd)
-	legend("bottomright", c("Hist", "RCP2.6", "RCP8.5", "Hist_uncorrected", "OBS"), col=c(rgb(0, 1, 0),mycol[1],mycol[3],mycol[2], "black"),lty=c(1,1,1,2,1),lwd=3)
+	legend("bottomright", c("Hist", "RCP2.6", "RCP8.5", "Hist_uncorrected", "T-MET"), col=c(rgb(0, 1, 0),mycol[1],mycol[3],mycol[2], "black"),lty=c(1,1,1,2,1),lwd=3)
 	dev.off()
 
 }
@@ -293,11 +306,11 @@ obs_month = aggregate(obs_cp_period, list(months_obs), mean)
 # ecdf
 #===============================================================================
 lwd=3
-plot(ecdf(obs_month$x), ylab="cdf",  col=mycol[1], xlab=xlab, main=var, lwd=lwd,lty=1)
+plot(ecdf(obs_month$x), ylab="cdf",  col=mycol[1], xlab=xlab, main=var, lwd=lwd,lty=1,  cex.main=2, cex.lab=1.2)
 lines(ecdf(hist_month_nq[,2]),  col=mycol[2], lwd=lwd)
 lines(ecdf(hist_month_noseas[,2]),  col=mycol[3], lwd=1)
 lines(ecdf(hist_month[,2]),  col='green', lwd=1)
-legend("topleft", c("OBS", "CLIM", "CLIM_QM", "CLIM_QMSEASON"), col=c(mycol[1],mycol[2], mycol[3], 'green'),lty=c(1,1,1,1) ,lwd=lwd)
+legend("topleft", c("T-MET", "CLIM", "QM", "QM_MONTH"), col=c(mycol[1],mycol[2], mycol[3], 'green'),lty=c(1,1,1,1) ,lwd=lwd,bg = "white")
 
 
 #===============================================================================
@@ -331,12 +344,13 @@ hist_doy_nq$MEAN=apply(hist_doy_nq[,2:(dim(hist_doy_nq)[2]-1)],1, mean, na.rm = 
 
 #
 #pdf(paste(outdir,var,"DOY2.pdf"))
-plot(obs_doy$x, type='l',col=mycol[1],lwd=lwd,lty=2, xlab='DOY', ylab=xlab, main=var)
+ylim= c(min(c(obs_doy$x,hist_doy_nq$MEAN,hist_doy_noseas$MEAN,hist_doy$MEAN)) , max(c(obs_doy$x,hist_doy_nq$MEAN,hist_doy_noseas$MEAN,hist_doy$MEAN)))
+plot(obs_doy$x, type='l',col=mycol[1],lwd=lwd,lty=2, xlab='DOY', ylab=xlab, main=var, ylim=ylim, cex.main=2, cex.lab=1.2)
 lines(hist_doy_nq$MEAN, type='l', col=mycol[2], lwd=lwd)
 lines(hist_doy_noseas$MEAN ,type='l', col=mycol[3],lwd=lwd)
 lines(hist_doy$MEAN, type='l', col='green',lwd=lwd)
 #legend("topright", c("OBS", "CLIM", "CLIM_QM"), col=c(mycol[1],mycol[2], mycol[3]),lty=c(2,1,1) ,lwd=lwd)
-legend("topright", c("OBS", "CLIM", "CLIM_QM", "CLIM_QMSEASON"), col=c(mycol[1],mycol[2], mycol[3], 'green'),lty=c(2,1,1,1) ,lwd=lwd)
+legend("topright", c("T-MET", "CLIM", "QM", "QM_MONTH"), col=c(mycol[1],mycol[2], mycol[3], 'green'),lty=c(2,1,1,1) ,lwd=lwd, bg = "white")
 
 }
 dev.off()
