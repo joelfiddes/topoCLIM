@@ -59,7 +59,7 @@ endDateRcp85 = "2099-12-31"
 
 # the period to do quantile mapping over (obs and sim must overlap!)
 startDateQmap = "1980-01-01"
-endDateQmap = "2004-12-31"
+endDateQmap = "2003-12-31"
 
 
 
@@ -157,13 +157,36 @@ print(var)
 		myx =which.min(abs(lon - mylon))
 		myy = which.min(abs(lat - mylat))
 
+
+		if (length(dim(tas_allgrids))>1){
 		# extract timeseries corresponding to qmap (all)
 		tas = tas_allgrids[myx,myy,]
+			
+		}
+
+		if (length(dim(tas_allgrids))==1){
+			# case of single grid box, nothing to extract
+		tas = tas_allgrids
+
+		}
+
 
 		# wspeed compute from u and v here
 		if(var=="uas"){
 			vas_allgrids =ncvar_get(nc, 'vas')
-			vas = tas_allgrids[myx,myy,]
+			
+				if (length(dim(tas_allgrids))>1){
+				# extract timeseries corresponding to qmap (all)
+				vas = tas_allgrids[myx,myy,]
+					
+				}
+
+				if (length(dim(tas_allgrids))==1){
+					# case of single grid box, nothing to extract
+				vas = tas_allgrids
+
+				}
+
 			tas = sqrt(tas^2 + vas^2)
 		  	}
 
@@ -181,7 +204,7 @@ print(var)
 		cordex_dates  = as.Date(datesPl)
 
 
-		if(any(is.na(tas)==TRUE)){print(paste0("no data found in variable, skipping this file", hist_file));next}
+		#if(any(is.na(tas)==TRUE)){print(paste0("no data found in variable, skipping this file", hist_file));next}
 		
 		# if all present and correct can now add to chain
 		modelChain_vec = c(modelChain_vec,modelChain) # available hist data
@@ -203,6 +226,9 @@ print(var)
 		# extract dat for qmap period
 		hist_qmap_period=tas[start_qmap_cord:end_qmap_cord]
 
+		# extract dates qmap period historical timeseries 1979-2005 
+		cordex_dates_qmap = cordex_dates[start_qmap_cord:end_qmap_cord]
+		
 		# get gmap pars
 		pars = fitQmap(obs_qmap_period,hist_qmap_period, method = "QUANT")
 
@@ -216,7 +242,7 @@ print(var)
 		# do seasonal qmap
 
 		# 12 mnth
-		month_cp = substring(cordex_dates_cp,6,7)
+		month_cp = substring(cordex_dates_qmap,6,7) 
 		hist_season<-1:length(hist_cp)
 		for (month in 1:12){
 			monthF = formatC(month, width=2, flag="0")
@@ -291,13 +317,35 @@ print(var)
 		myx =which.min(abs(lon - mylon))
 		myy = which.min(abs(lat - mylat))
 
+		if (length(dim(tas_allgrids))>1){
 		# extract timeseries corresponding to qmap (all)
 		tas = tas_allgrids[myx,myy,]
+			
+		}
+
+		if (length(dim(tas_allgrids))==1){
+			# case of single grid box, nothing to extract
+		tas = tas_allgrids
+
+		}
+
 
 		# wspeed compute from u and v here
 		if(var=="uas"){
 			vas_allgrids =ncvar_get(nc, 'vas')
-			vas = tas_allgrids[myx,myy,]
+			
+				if (length(dim(tas_allgrids))>1){
+				# extract timeseries corresponding to qmap (all)
+				vas = tas_allgrids[myx,myy,]
+					
+				}
+
+				if (length(dim(tas_allgrids))==1){
+					# case of single grid box, nothing to extract
+				vas = tas_allgrids
+
+				}
+
 			tas = sqrt(tas^2 + vas^2)
 		  	}
 
@@ -397,13 +445,35 @@ print(var)
 		myx =which.min(abs(lon - mylon))
 		myy = which.min(abs(lat - mylat))
 
+		if (length(dim(tas_allgrids))>1){
 		# extract timeseries corresponding to qmap (all)
 		tas = tas_allgrids[myx,myy,]
+			
+		}
+
+		if (length(dim(tas_allgrids))==1){
+			# case of single grid box, nothing to extract
+		tas = tas_allgrids
+
+		}
+
 
 		# wspeed compute from u and v here
 		if(var=="uas"){
 			vas_allgrids =ncvar_get(nc, 'vas')
-			vas = tas_allgrids[myx,myy,]
+			
+				if (length(dim(tas_allgrids))>1){
+				# extract timeseries corresponding to qmap (all)
+				vas = tas_allgrids[myx,myy,]
+					
+				}
+
+				if (length(dim(tas_allgrids))==1){
+					# case of single grid box, nothing to extract
+				vas = tas_allgrids
+
+				}
+
 			tas = sqrt(tas^2 + vas^2)
 		  	}
 

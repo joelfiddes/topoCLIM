@@ -58,7 +58,8 @@ max_doy = {
 }
 
 
-def get_calendar(arr: Union[xr.DataArray, xr.Dataset], dim: str = "time") -> str:
+def get_calendar(arr: Union[xr.DataArray, xr.Dataset],
+                 dim: str = "time") -> str:
     """Return the calendar of the time coord of the DataArray.
 
     Parameters
@@ -185,9 +186,9 @@ def convert_calendar(
     # TODO Maybe the 5-6 days to remove could be given by the user?
     if align_on == "year":
 
-
         def _yearly_interp_doy(time):
-            # Returns the nearest day in the target calendar of the corresponding "decimal year" in the source calendar
+            # Returns the nearest day in the target calendar of the
+            # corresponding "decimal year" in the source calendar
             yr = int(time.dt.year[0])
             return np.round(
                 days_in_year(yr, cal_tgt)
@@ -223,7 +224,6 @@ def convert_calendar(
     return out
 
 
-
 def interp_calendar(
     source: Union[xr.DataArray, xr.Dataset], target: xr.DataArray, dim: str = "time",
 ) -> xr.DataArray:
@@ -254,16 +254,15 @@ def interp_calendar(
     cal_tgt = get_calendar(target, dim=dim)
 
     out = source.copy()
-    out[dim] = datetime_to_decimal_year(source[dim], calendar=cal_src).drop_vars(dim)
-
+    out[dim] = datetime_to_decimal_year(
+        source[dim], calendar=cal_src).drop_vars(dim)
 
     target_idx = datetime_to_decimal_year(target, calendar=cal_tgt)
-    
-    target_idx = target_idx.astype('float') 
+
+    target_idx = target_idx.astype('float')
     out = out.interp(time=target_idx)
     out[dim] = target.time
     return out
-
 
 
 def _convert_datetime(
@@ -343,12 +342,13 @@ def datetime_to_decimal_year(
         calendar = "standard"
 
     def _make_index(times):
-        time=times.time
+        time = times.time
 
         year = int(time.dt.year[0])
         doys = cftime.date2num(
-            ensure_cftime_array(time), f"days since {year:04d}-01-01", calendar=calendar
-        )
+            ensure_cftime_array(time),
+            f"days since {year:04d}-01-01",
+            calendar=calendar)
         return xr.DataArray(
             year + doys / days_in_year(year, calendar),
             dims=time.dims,
@@ -391,7 +391,10 @@ def percentile_doy(
     """
     # TODO: Support percentile array, store percentile in coordinates.
     #  This is supported by DataArray.quantile, but not by groupby.reduce.
-    rr = arr.rolling(min_periods=1, center=True, time=window).construct("window")
+    rr = arr.rolling(
+        min_periods=1,
+        center=True,
+        time=window).construct("window")
 
     # Create empty percentile array
     g = rr.groupby("time.dayofyear")
@@ -399,7 +402,8 @@ def percentile_doy(
     p = g.reduce(np.nanpercentile, dim=("time", "window"), q=per * 100)
 
     # The percentile for the 366th day has a sample size of 1/4 of the other days.
-    # To have the same sample size, we interpolate the percentile from 1-365 doy range to 1-366
+    # To have the same sample size, we interpolate the percentile from 1-365
+    # doy range to 1-366
     if p.dayofyear.max() == 366:
         p = adjust_doy_calendar(p.sel(dayofyear=(p.dayofyear < 366)), arr)
 
@@ -407,7 +411,9 @@ def percentile_doy(
     return p
 
 
-def _interpolate_doy_calendar(source: xr.DataArray, doy_max: int) -> xr.DataArray:
+def _interpolate_doy_calendar(
+        source: xr.DataArray,
+        doy_max: int) -> xr.DataArray:
     """Interpolate from one set of dayofyear range to another.
 
     Interpolate an array defined over a `dayofyear` range (say 1 to 360) to another `dayofyear` range (say 1
@@ -436,12 +442,15 @@ def _interpolate_doy_calendar(source: xr.DataArray, doy_max: int) -> xr.DataArra
     tmp = source.interpolate_na(dim="dayofyear")
 
     # Interpolate to target dayofyear range
-    tmp.coords["dayofyear"] = np.linspace(start=1, stop=doy_max, num=doy_max_source)
+    tmp.coords["dayofyear"] = np.linspace(
+        start=1, stop=doy_max, num=doy_max_source)
 
     return tmp.interp(dayofyear=range(1, doy_max + 1))
 
 
-def adjust_doy_calendar(source: xr.DataArray, target: xr.DataArray) -> xr.DataArray:
+def adjust_doy_calendar(
+        source: xr.DataArray,
+        target: xr.DataArray) -> xr.DataArray:
     """Interpolate from one set of dayofyear range to another calendar.
 
     Interpolate an array defined over a `dayofyear` range (say 1 to 360) to another `dayofyear` range (say 1
@@ -564,7 +573,8 @@ def cftime_end_time(date, freq):
         mod_freq = MonthBegin(n=freq.n)
     else:
         mod_freq = freq
-    return cftime_start_time(date + mod_freq, freq) - pydt.timedelta(microseconds=1)
+    return cftime_start_time(date + mod_freq, freq) - \
+        pydt.timedelta(microseconds=1)
 
 
 def cfindex_start_time(cfindex, freq):
@@ -652,9 +662,7 @@ def time_bnds(group, freq):
         else:
             raise TypeError(
                 "Index must be a CFTimeIndex, but got an instance of {}".format(
-                    type(group).__name__
-                )
-            )
+                    type(group).__name__))
     else:
         raise TypeError(
             "Index must be a CFTimeIndex, but got an instance of {}".format(
@@ -667,20 +675,18 @@ def time_bnds(group, freq):
     )
 
 
-
-
 # datetimeindex = ds.indexes["time"]
-# if datetimeindex.is_all_dates is False: 
+# if datetimeindex.is_all_dates is False:
 #     dateob = datetimeindex[0]
 #     cal = dateob.calendar
 #     print(cal)
 #     print(dateob.datetime_compatible)
 
-# ds_conv = convert_calendar(ds, ds1,'year', 'time')  
-# ds_interp = interp_calendar(ds, ds1, 'time')  
+# ds_conv = convert_calendar(ds, ds1,'year', 'time')
+# ds_interp = interp_calendar(ds, ds1, 'time')
 
 # datetimeindex = ds_interp.indexes["time"]
-# if datetimeindex.is_all_dates is False: 
+# if datetimeindex.is_all_dates is False:
 #     dateob = datetimeindex[0]
 #     cal = dateob.calendar
 #     print(cal)

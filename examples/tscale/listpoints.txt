@@ -1,0 +1,2 @@
+,id,asp,ele,slp,svf,lon,lat,surfRough,tz,name
+0,1,157,2543,9,0.980,9.809,46.830,0.002,0,WFJ2

@@ -4,7 +4,7 @@ sample = args[2]
 daily_obs = args[3]
 
 indir=paste0(wd, '/s',sample,'/')
-pdf(paste(indir,"evalplot_singleModel_season.pdf"),height=20, width=10)
+pdf(paste0(indir,"evalplot_singleModel_season.pdf"),height=20, width=10)
 par(mfrow=c(5,2))
 require(wesanderson)
 
@@ -35,6 +35,11 @@ qmap_files = list.files(path = paste0(indir,"/aqmap_results/"),full.names=TRUE )
 results_qmap = qmap_files[ grep('_qmap_',qmap_files)]
 results_nmap = qmap_files[ grep('_nmap_',qmap_files)]
 results_season = qmap_files[ grep('_season_',qmap_files)]
+
+# stats vectors
+rMat=c()
+rmseMat=c()
+biasMat=c()
 
 
 # llop thru list of vars
@@ -112,6 +117,9 @@ load(results_season [grep(paste0('rcp85.*',var,'$'),results_season) ] )
 rcp85_qmap_season_list= df
 load(results_nmap [grep(paste0('rcp85.*',var,'$'),results_season) ] )
 rcp85_nqmap=df
+
+# do stats here already
+
 
 cordex_dates_cp=hist_qmap_season_list$Date
 greg_cal_rcp=rcp26_qmap_season_list$Date
@@ -201,7 +209,7 @@ if (var == 'tas'){
 	lines(hist_year$Group.1, hist_year_nq$MEAN-273.15, type='l', col=mycol[2],lwd=lwd,lty=2)
  	lines(obs_year$Group.1 , obs_year$x-273.15,lwd=lwd, lty=1, col="grey31")
  	abline(h=0, col="grey31")
- 	legend("topleft", c("Hist","Hist_raw", "RCP2.6", "RCP2.6_raw", "RCP8.5" ,"RCP8.5_raw",  "T-MET"), col=c(mycol[1],mycol[1], mycol[1],mycol[1],mycol[3],mycol[3], "grey31"),lty=c(1,2,1,2,1,2,1),lwd=3)
+ 	legend("topleft", c("Hist","Hist_raw", "RCP2.6", "RCP2.6_raw", "RCP8.5" ,"RCP8.5_raw",  "T-MET"), col=c(mycol[2],mycol[2], mycol[1],mycol[1],mycol[3],mycol[3], "grey31"),lty=c(1,2,1,2,1,2,1),lwd=3)
 	dev.off()
 
 }
@@ -289,28 +297,18 @@ obs_month = aggregate(obs_cp_period, list(months_obs), mean)
 
 
 
-#===============================================================================
-# summary stats
-#===============================================================================
-# cor(obs_month, hist_month$MEAN)
-# cor(obs_month, hist_qmap_month$MEAN)
 
-# rmse(obs_month, hist_month$MEAN)
-# rmse(obs_month, hist_qmap_month$MEAN)
 
-# mean(obs_month)
-# mean(hist_month$MEAN)
-# mean(hist_qmap_month$MEAN)
 
 #===============================================================================
 # ecdf
 #===============================================================================
-lwd=3
-plot(ecdf(obs_month$x), ylab="cdf",  col=mycol[1], xlab=xlab, main=var, lwd=lwd,lty=1,  cex.main=2, cex.lab=1.2)
+lwd=2
+plot(ecdf(obs_month$x), ylab="cdf",  col="black", xlab=xlab, main=var, lwd=lwd,lty=1,  cex.main=2, cex.lab=1.2)
 lines(ecdf(hist_month_nq[,2]),  col=mycol[2], lwd=lwd)
-lines(ecdf(hist_month_noseas[,2]),  col=mycol[3], lwd=1)
-lines(ecdf(hist_month[,2]),  col='green', lwd=1)
-legend("topleft", c("T-MET", "CLIM", "QM", "QM_MONTH"), col=c(mycol[1],mycol[2], mycol[3], 'green'),lty=c(1,1,1,1) ,lwd=lwd,bg = "white")
+lines(ecdf(hist_month_noseas[,2]),  col=mycol[1], lwd=lwd)
+lines(ecdf(hist_month[,2]), col="orange", lwd=lwd)
+legend("topleft", c("T-MET", "CLIM", "QM", "QM_MONTH"), col=c("black", mycol[2], mycol[1], "orange"),lty=c(1,1,1,1) ,lwd=lwd,bg = "white")
 
 
 #===============================================================================
@@ -345,12 +343,52 @@ hist_doy_nq$MEAN=apply(hist_doy_nq[,2:(dim(hist_doy_nq)[2]-1)],1, mean, na.rm = 
 #
 #pdf(paste(outdir,var,"DOY2.pdf"))
 ylim= c(min(c(obs_doy$x,hist_doy_nq$MEAN,hist_doy_noseas$MEAN,hist_doy$MEAN)) , max(c(obs_doy$x,hist_doy_nq$MEAN,hist_doy_noseas$MEAN,hist_doy$MEAN)))
-plot(obs_doy$x, type='l',col=mycol[1],lwd=lwd,lty=2, xlab='DOY', ylab=xlab, main=var, ylim=ylim, cex.main=2, cex.lab=1.2)
+plot(obs_doy$x, type='l',col="black",lwd=lwd,lty=2, xlab='DOY', ylab=xlab, main=var, ylim=ylim, cex.main=2, cex.lab=1.2)
 lines(hist_doy_nq$MEAN, type='l', col=mycol[2], lwd=lwd)
-lines(hist_doy_noseas$MEAN ,type='l', col=mycol[3],lwd=lwd)
-lines(hist_doy$MEAN, type='l', col='green',lwd=lwd)
+lines(hist_doy_noseas$MEAN ,type='l', col=mycol[1],lwd=lwd)
+lines(hist_doy$MEAN, type='l', col="orange",lwd=lwd)
 #legend("topright", c("OBS", "CLIM", "CLIM_QM"), col=c(mycol[1],mycol[2], mycol[3]),lty=c(2,1,1) ,lwd=lwd)
-legend("topright", c("T-MET", "CLIM", "QM", "QM_MONTH"), col=c(mycol[1],mycol[2], mycol[3], 'green'),lty=c(2,1,1,1) ,lwd=lwd, bg = "white")
+legend("topright", c("T-MET", "CLIM", "QM", "QM_MONTH"), col=c("black", mycol[2], mycol[1],"orange"),lty=c(2,1,1,1) ,lwd=lwd, bg = "white")
+
+
+
+#===============================================================================
+# summary stats
+#===============================================================================
+require(hydroGOF)
+clim_r = cor(obs_doy$x, hist_doy_nq$MEAN)
+qm_r = cor(obs_doy$x, hist_doy_noseas$MEAN)
+qms_r = cor(obs_doy$x, hist_doy$MEAN)
+
+clim_rm = rmse(hist_doy_nq$MEAN, obs_doy$x)
+qm_rm = rmse(hist_doy_noseas$MEAN, obs_doy$x)
+qms_rm = rmse(hist_doy$MEAN,  obs_doy$x)
+
+clim_pb = pbias(hist_doy_nq$MEAN, obs_doy$x)
+qm_pb = pbias(hist_doy_noseas$MEAN, obs_doy$x)
+qms_pb = pbias(hist_doy$MEAN,  obs_doy$x)
+
+
+
+rvec=c(clim_r, qm_r, qms_r)
+rmsevec=c(clim_rm, qm_rm, qms_rm)
+biasvec=c(clim_pb, qm_pb, qms_pb)
+
+rMat=cbind(rMat,rvec)
+rmseMat=cbind(rmseMat,rmsevec)
+biasMat=cbind(biasMat, biasvec)
 
 }
 dev.off()
+
+df = data.frame(rMat)
+colnames(df) <- c('tas' ,'pr', 'rsds','rlds' , 'hurs')
+write.table(df, paste0(wd, "/r_stats.csv"))
+
+df = data.frame(rmseMat)
+colnames(df) <- c('tas' ,'pr', 'rsds','rlds' , 'hurs')
+write.table(df, paste0(wd, "/rmse_stats.csv"))
+
+df = data.frame(biasMat)
+colnames(df) <- c('tas' ,'pr', 'rsds','rlds' , 'hurs')
+write.table(df, paste0(wd, "/bias_stats.csv"))

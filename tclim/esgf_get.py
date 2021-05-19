@@ -5,25 +5,39 @@ import logging
 from pyesgf.search import SearchConnection
 import xarray as xr
 
-#fixed
-project='CORDEX'
-domain='EUR-44'
-time_frequency='day' #3hr
-outdir="/home/joel/sim/qmap/raw_cordex/"
+# fixed
+project = 'CORDEX'
+domain = 'EUR-44'
+time_frequency = 'day'  # 3hr
+outdir = "/home/joel/sim/qmap/raw_cordex/"
 
 print('Downloading' + time_frequency + ' data')
 if not os.path.exists(outdir):
     os.makedirs(outdir)
 
-# to clear logger: https://stackoverflow.com/questions/30861524/logging-basicconfig-not-creating-log-file-when-i-run-in-pycharm
+# to clear logger:
+# https://stackoverflow.com/questions/30861524/logging-basicconfig-not-creating-log-file-when-i-run-in-pycharm
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
 # change to logging.DEBUG to get debug indo
-logging.basicConfig(level=logging.INFO, filename=outdir+"logfile", filemode="w",
-                        format="%(asctime)-15s %(levelname)-8s %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    filename=outdir + "logfile",
+    filemode="w",
+    format="%(asctime)-15s %(levelname)-8s %(message)s")
 # variables
-vars=['hurs', 'tasmin', 'tasmax', 'uas', 'vas', 'tas', 'pr', 'ps', 'rsds','rlds']#,'sfcWind'
-expers=['rcp26', 'historical', 'rcp85']
+vars = [
+    'hurs',
+    'tasmin',
+    'tasmax',
+    'uas',
+    'vas',
+    'tas',
+    'pr',
+    'ps',
+    'rsds',
+    'rlds']  # ,'sfcWind'
+expers = ['rcp26', 'historical', 'rcp85']
 # define domain here (once figured out rlat/lon translation):
 # lonE = 5
 # lonW = 11
@@ -31,10 +45,10 @@ expers=['rcp26', 'historical', 'rcp85']
 # latN = 48
 
 # now we do a simple index method to extract bbox
-lonstart=40
-lonend=60
-latstart=40
-latend=50
+lonstart = 40
+lonend = 60
+latstart = 40
+latend = 50
 
 # logon manager
 lm = LogonManager()
@@ -51,16 +65,15 @@ if not lm.is_logged_on():
     lm.is_logged_on()
 
 
-
 conn = SearchConnection('https://esgf-data.dkrz.de/esg-search', distrib=True)
 
 for exper in expers:
-    logging.info("Experimet: "+exper)
-    print("Experimet: "+exper)
+    logging.info("Experimet: " + exper)
+    print("Experimet: " + exper)
     for var in vars:
-        myvar=var
-        logging.info("Variable: " +var)
-        print("Variable: " +var)
+        myvar = var
+        logging.info("Variable: " + var)
+        print("Variable: " + var)
 
         ctx = conn.new_context(
             project='CORDEX',
@@ -68,7 +81,7 @@ for exper in expers:
             experiment=exper,
             time_frequency=time_frequency,
             variable=var
-            )
+        )
         #logging.info("Found hits: " + str(ctx.hit_count))
         print("Found hits: " + str(ctx.hit_count))
 
@@ -77,12 +90,12 @@ for exper in expers:
         # f.close()
 
         # loop through hits
-        for hit in range(0,ctx.hit_count):
+        for hit in range(0, ctx.hit_count):
             #logging.info("retrieving hit: " +str(hit+1)+"/"+str(ctx.hit_count) +" "+var+" "+exper)
-            print("retrieving hit: " +str(hit+1)+"/"+str(ctx.hit_count) +" "+var+" "+exper)
+            print("retrieving hit: " + str(hit + 1) + "/" +
+                  str(ctx.hit_count) + " " + var + " " + exper)
             result = ctx.search()[hit]
             result.dataset_id
-
 
             files = result.file_context().search()
             for file in files:
@@ -94,37 +107,27 @@ for exper in expers:
                     continue
 
                 outname = my_url.split('/')[-1]
-                if os.path.isfile(outdir+outname):
+                if os.path.isfile(outdir + outname):
                     #logging.info (outname+" already downloaded!")
-                    print(outname+" already downloaded!")
+                    print(outname + " already downloaded!")
                     continue
-
-
 
                 try:
                     ds = xr.open_dataset(my_url, decode_times=False)
-                    logging.info("Downloaded"+my_url)
+                    logging.info("Downloaded" + my_url)
                 except IOError:
                     #logging.info("Server likely down skipping"+my_url)
-                    print("Server likely down skipping"+my_url)
+                    print("Server likely down skipping" + my_url)
                     continue
-                #logging.info(ds)
+                # logging.info(ds)
                 #rp = ds[rotate_pole]
                 da = ds[myvar]
                 #da = da.sel(lat=slice(latS, latN), lon=slice(lonE, lonW))
-                da2 = da[:,latstart:latend, lonstart:lonend]
+                da2 = da[:, latstart:latend, lonstart:lonend]
 
-                da2.to_netcdf(outdir+outname)
-                logging.info(outname+" done!")
-                print(outname+" done!")
-
-
-
-
-
-
-
-
+                da2.to_netcdf(outdir + outname)
+                logging.info(outname + " done!")
+                print(outname + " done!")
 
 
 # py code to convert between rotataed and normal lonlat from here: TOBE IMPLEMENTED
