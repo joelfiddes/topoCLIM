@@ -20,10 +20,15 @@ It's recommended (but not essential) that you use some sort of python environmen
 
 ```{bash}
 $ conda create -n tclim python ipython
-...
 $ source activate tclim
 (tclim)$ cd topoCLIM
 (tclim)$ pip install -r requirements.txt
+...
+
+### Running the example
+...
+cd ./topoCLIM/tclim
+python run_example.py ../examples/ 1 1
 ...
 
 ### Generating TopoSCALE timeseries
@@ -47,11 +52,6 @@ And postprocessed:
 python esgf_post.py
 ...
 
-### Running TopoCLIMLIM can then be run as:
 
-...
-python 
-...
 
-python 
-...
+
