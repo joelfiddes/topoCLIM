@@ -3,6 +3,15 @@ wd = args[1]
 sample = args[2]
 daily_obs = args[3]
 
+# meteo
+daily_met = "/home/joel/sim/qmap/wfj_station_daily.csv"
+monthly_met = "/home/joel/sim/qmap/wfj_station_monthly.csv"
+doy_met = "/home/joel/sim/qmap/wfj_station_doy.csv"
+dail_met = read.csv(daily_met)
+monthly_met = read.csv(monthly_met)
+doy_met = read.csv(doy_met)
+
+
 indir=paste0(wd, '/s',sample,'/')
 pdf(paste0(indir,"evalplot_singleModel_season.pdf"),height=20, width=10)
 par(mfrow=c(5,2))
@@ -41,6 +50,9 @@ rMat=c()
 rmseMat=c()
 biasMat=c()
 
+rMat1=c()
+rmseMat1=c()
+biasMat1=c()
 
 # llop thru list of vars
 myvars=c('tas' ,'pr', 'rsds','rlds' , 'hurs')#, 'ps','uas')
@@ -71,6 +83,28 @@ print(var)
 							if(var=="uas"){obsindex <-8; convFact <-1}# ms-1
 								if(var=="vas"){obsindex <-8; convFact <-1}# ms-1
 								# where is DW?
+
+ 	if(var=="tas"){obsindex <-6;metindex <-2; convFact <-1;convFactMet<- 1; xlab <- "Mean daily air temperature [K]"} # K
+	if(var=="tasmin"){obsindex <-11; convFact <-1;convFactMet<- 1;  xlab <- "Min daily air temperature [K]"} # K
+	if(var=="tasmax"){obsindex <-10; convFact <-1;convFactMet<- 1 ;  xlab <- "Max daily air temperature [K]"} # K
+		if(var=="pr"){obsindex <-12;metindex <-10; convFact <-(1);convFactMet<- 0.000555; xlab <- "Mean daily precipitation rate [Kg m-2 s-1]"} # kgm-2s-1 obs are in mean mm/hr for that day convert to mm/s (cordex)
+			if(var=="ps"){obsindex <-9; metindex <-3;convFact <-1;convFactMet<- 1 ;  xlab <- "Mean daily air pressure [Pa]" }# Pa
+				if(var=="hurs"){obsindex <-7;metindex <-3 ;convFact <-1;convFactMet<- 100;  xlab <- "Mean daily relative humidity [%]" } # % 0-100
+					if(var=="rsds"){obsindex <-2; metindex <-6;convFact <-1;convFactMet<- 1 ;  xlab <- "Mean daily incoming shortwave radiation [W m-2]"}	# Wm-2
+						if(var=="rlds"){obsindex <-3; metindex <-8;convFact <-1;convFactMet<- 1 ;  xlab <- "Mean daily incoming longwave radiation [W m-2]"}# Wm-2
+							if(var=="uas"){obsindex <-8; convFact <-1;convFactMet<- 1}# ms-1
+								if(var=="vas"){obsindex <-8; convFact <-1;convFactMet<- 1}# ms-1
+								# where is DW?
+
+   #read met
+  doy_metPar= doy_met[,metindex]*convFactMet
+  month_metPar= monthly_met[,metindex]*convFactMet
+
+# require(caTools)
+#   if (var =="pr"){
+
+#   	doy_metPar = runmean(doy_metPar,10)
+#   }
 
 	# read and convert obs unit
 	obs_var=obs[,obsindex]*convFact	
@@ -308,7 +342,8 @@ plot(ecdf(obs_month$x), ylab="cdf",  col="black", xlab=xlab, main=var, lwd=lwd,l
 lines(ecdf(hist_month_nq[,2]),  col=mycol[2], lwd=lwd)
 lines(ecdf(hist_month_noseas[,2]),  col=mycol[1], lwd=lwd)
 lines(ecdf(hist_month[,2]), col="orange", lwd=lwd)
-legend("topleft", c("T-MET", "CLIM", "QM", "QM_MONTH"), col=c("black", mycol[2], mycol[1], "orange"),lty=c(1,1,1,1) ,lwd=lwd,bg = "white")
+lines(ecdf(month_metPar), col="darkgrey")
+legend("topleft", c("STATION","T-MET", "CLIM", "QM", "QM_MONTH"), col=c("darkgrey","black", mycol[2], mycol[1], "orange"),lty=c(1,1,1,1,1) ,lwd=lwd,bg = "white")
 
 
 #===============================================================================
@@ -347,8 +382,9 @@ plot(obs_doy$x, type='l',col="black",lwd=lwd,lty=2, xlab='DOY', ylab=xlab, main=
 lines(hist_doy_nq$MEAN, type='l', col=mycol[2], lwd=lwd)
 lines(hist_doy_noseas$MEAN ,type='l', col=mycol[1],lwd=lwd)
 lines(hist_doy$MEAN, type='l', col="orange",lwd=lwd)
+lines(doy_metPar, col="darkgrey", lwd=2)
 #legend("topright", c("OBS", "CLIM", "CLIM_QM"), col=c(mycol[1],mycol[2], mycol[3]),lty=c(2,1,1) ,lwd=lwd)
-legend("topright", c("T-MET", "CLIM", "QM", "QM_MONTH"), col=c("black", mycol[2], mycol[1],"orange"),lty=c(2,1,1,1) ,lwd=lwd, bg = "white")
+legend("topright", c("STATION","T-MET", "CLIM", "QM", "QM_MONTH"), col=c("darkgrey","black", mycol[2], mycol[1],"orange"),lty=c(1,2,1,1,1) ,lwd=lwd, bg = "white")
 
 
 
@@ -359,6 +395,7 @@ require(hydroGOF)
 clim_r = cor(obs_doy$x, hist_doy_nq$MEAN)
 qm_r = cor(obs_doy$x, hist_doy_noseas$MEAN)
 qms_r = cor(obs_doy$x, hist_doy$MEAN)
+
 
 clim_rm = rmse(hist_doy_nq$MEAN, obs_doy$x)
 qm_rm = rmse(hist_doy_noseas$MEAN, obs_doy$x)
@@ -378,6 +415,31 @@ rMat=cbind(rMat,rvec)
 rmseMat=cbind(rmseMat,rmsevec)
 biasMat=cbind(biasMat, biasvec)
 
+# against meteo
+clim_r = cor(doy_metPar, hist_doy_nq$MEAN)
+qm_r = cor(doy_metPar, hist_doy_noseas$MEAN)
+qms_r = cor(doy_metPar, hist_doy$MEAN)
+tmet_r = cor(doy_metPar, obs_doy$x)
+
+clim_rm = rmse(hist_doy_nq$MEAN, doy_metPar)
+qm_rm = rmse(hist_doy_noseas$MEAN, doy_metPar)
+qms_rm = rmse(hist_doy$MEAN,  doy_metPar)
+tmet_rm = rmse(obs_doy$x,doy_metPar)
+
+clim_pb = pbias(hist_doy_nq$MEAN, doy_metPar)
+qm_pb = pbias(hist_doy_noseas$MEAN, doy_metPar)
+qms_pb = pbias(hist_doy$MEAN,  doy_metPar)
+tmet_pb = pbias(obs_doy$x,doy_metPar)
+
+
+rvec=c(clim_r, qm_r, qms_r, tmet_r)
+rmsevec=c(clim_rm, qm_rm, qms_rm, tmet_rm)
+biasvec=c(clim_pb, qm_pb, qms_pb, tmet_pb)
+
+rMat1=cbind(rMat1,rvec)
+rmseMat1=cbind(rmseMat1,rmsevec)
+biasMat1=cbind(biasMat1, biasvec)
+
 }
 dev.off()
 
@@ -392,3 +454,15 @@ write.table(df, paste0(wd, "/rmse_stats.csv"))
 df = data.frame(biasMat)
 colnames(df) <- c('tas' ,'pr', 'rsds','rlds' , 'hurs')
 write.table(df, paste0(wd, "/bias_stats.csv"))
+
+df = data.frame(rMat1)
+colnames(df) <- c('tas' ,'pr', 'rsds','rlds' , 'hurs')
+write.table(df, paste0(wd, "/r_stats1.csv"))
+
+df = data.frame(rmseMat1)
+colnames(df) <- c('tas' ,'pr', 'rsds','rlds' , 'hurs')
+write.table(df, paste0(wd, "/rmse_stats1.csv"))
+
+df = data.frame(biasMat1)
+colnames(df) <- c('tas' ,'pr', 'rsds','rlds' , 'hurs')
+write.table(df, paste0(wd, "/bias_stats1.csv"))

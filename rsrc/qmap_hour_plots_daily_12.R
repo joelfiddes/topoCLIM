@@ -59,9 +59,11 @@ endDateRcp85 = "2099-12-31"
 
 # the period to do quantile mapping over (obs and sim must overlap!)
 startDateQmap = "1980-01-01"
-endDateQmap = "2003-12-31"
 
+# examples
+#endDateQmap = "2003-12-31"
 
+endDateQmap = "2004-12-31"
 
 
 
@@ -203,8 +205,8 @@ print(var)
 		datesPl<-ISOdatetime(origin2,0,0,0,0,0,tz='UTC') + z #dates sequence
 		cordex_dates  = as.Date(datesPl)
 
-
-		#if(any(is.na(tas)==TRUE)){print(paste0("no data found in variable, skipping this file", hist_file));next}
+		# comment this line for examples
+		if(any(is.na(tas)==TRUE)){print(paste0("no data found in variable, skipping this file", hist_file));next}
 		
 		# if all present and correct can now add to chain
 		modelChain_vec = c(modelChain_vec,modelChain) # available hist data
@@ -242,7 +244,7 @@ print(var)
 		# do seasonal qmap
 
 		# 12 mnth
-		month_cp = substring(cordex_dates_qmap,6,7) 
+		month_cp = substring(cordex_dates_cp ,6,7) # examples this is cordex_dates_qmap
 		hist_season<-1:length(hist_cp)
 		for (month in 1:12){
 			monthF = formatC(month, width=2, flag="0")

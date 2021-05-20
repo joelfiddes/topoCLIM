@@ -40,6 +40,7 @@ CORDEXPATH = cordex_dir + "/aresult/"
 # ===============================================================================
 # INPUT
 # ===============================================================================
+lp = pd.read_csv(tscale_sim_dir + "/listpoints.txt")
 
 # !!!settings for figure 3!!!
 # wd = '/home/joel/sim/qmap/PAPER_RESULTS/tclim_points_paper/'
@@ -52,19 +53,21 @@ CORDEXPATH = cordex_dir + "/aresult/"
 # fsmexepath = "/home/joel/src/FSM/FSM"  # version compiled on hyperion
 # srcdir = "/home/joel/src/topoCLIM/"
 # CORDEXPATH = cordex_dir + "/aresult_current/"
-
+# lp.lat = 46.985
+# lp.lon = 9.5
+# !!!settings for figure 3!!!
 
 # settings for example
-wd = '/home/joel/src/topoCLIM/examples/'
-tscale_sim_dir = "/home/joel/src/topoCLIM/examples/tscale/"
-cordex_dir = "/home/joel/src/topoCLIM/examples/cordex"
-starti = 1
-endi = 1
+# wd = '/home/joel/src/topoCLIM/examples/'
+# tscale_sim_dir = "/home/joel/src/topoCLIM/examples/tscale/"
+# cordex_dir = "/home/joel/src/topoCLIM/examples/cordex"
+# starti = 1
+# endi = 1
 
-namelist = "/home/joel/src/FSM/nlst_tmapp.txt"  # in src directory
-fsmexepath = "/home/joel/src/FSM/FSM"  # version compiled on hyperion
-srcdir = "/home/joel/src/topoCLIM/"
-CORDEXPATH = cordex_dir
+# namelist = "/home/joel/src/FSM/nlst_tmapp.txt"  # in src directory
+# fsmexepath = "/home/joel/src/FSM/FSM"  # version compiled on hyperion
+# srcdir = "/home/joel/src/topoCLIM/"
+# CORDEXPATH = cordex_dir
 
 # =========================================================================
 #	Log
@@ -87,7 +90,7 @@ CORDEXPATH = cordex_dir
 
 
 # get grid box
-lp = pd.read_csv(tscale_sim_dir + "/listpoints.txt")
+
 
 print("Computing qmap files " + str(range(int(starti) - 1, int(endi))))
 

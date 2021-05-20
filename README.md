@@ -23,13 +23,14 @@ $ conda create -n tclim python ipython
 $ source activate tclim
 (tclim)$ cd topoCLIM
 (tclim)$ pip install -r requirements.txt
-...
+```
 
 ### Running the example
-...
+A minimal example for a single point (WFJ) and three climate models is provided here including raw cordex and toposcale downscaled data so it can be run straight out of the box:
+```
 cd ./topoCLIM/tclim
 python run_example.py ../examples/ 1 1
-...
+```
 
 ### Generating TopoSCALE timeseries
 
@@ -43,14 +44,14 @@ To access CORDEX data on the Earth System Grid Federation nodes credentials are 
 https://esgf-data.dkrz.de/user/add/?next=http://esgf-data.dkrz.de/user/add/
 
 CORDEX data is downloaded using the helper script (parameters set in header):
-...
+```
 python esgf_get.py
-...
+```
 
 And postprocessed:
-...
+```
 python esgf_post.py
-...
+```
 
 
 
