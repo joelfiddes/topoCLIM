@@ -1,5 +1,3 @@
-# a more evolved way of tclim' ing
-
 """
 python3
 
@@ -58,7 +56,7 @@ CORDEXPATH = cordex_dir
 # logging.info("Run script = " + os.path.basename(__file__))
 
 # ===============================================================================
-# KODE
+# CODE
 # ===============================================================================
 
 

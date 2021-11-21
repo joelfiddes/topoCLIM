@@ -19,10 +19,15 @@ $ cd topoCLIM
 It's recommended (but not essential) that you use some sort of python environment manager, such as using the Anaconda distribution and creating an environment (in the code below called "`tclim`"), or using `virtualenv` instead.  This getting started will use Anaconda.
 
 ```{bash}
-$ conda create -n tclim python ipython
-$ source activate tclim
-(tclim)$ cd topoCLIM
+$ conda create -n tclim python
+$ conda activate tclim
 (tclim)$ pip install -r requirements.txt
+```
+Install R and R package dependencies:
+
+```{bash}
+conda install -c conda-forge r-ncdf4
+conda install -c omgarcia r-qmap
 ```
 
 ### Running the example

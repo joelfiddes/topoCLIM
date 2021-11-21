@@ -102,8 +102,19 @@ def main(daily_cordex, hourly_obs, mylon, mylat, mytz, slope):
     scalingFact = df_cordex.ILWR / df_cordex.temp
     scalingFact_day = scalingFact.resample('H').mean()
     scale_fact_day_interp = scalingFact_day.interpolate(method='pad')
-    station.data_disagg['ILWR'] = station.data_disagg.temp * \
-        scale_fact_day_interp
+    station.data_disagg['ILWR'] = station.data_disagg.temp * scale_fact_day_interp
+
+    # New method (switched off)
+    if 1==2:
+        # Stefan-Bolztmann constant
+        sbc = 5.67e-8
+        # diagnose daily all sky emissivity according Konzelmann et al. 1994
+        ase = df_cordex.ILWR(df_cordex.temp**4 * sbc)
+        ase_day = ase.resample('H').mean()
+        ase_day_interp = ase_day.interpolate(method='linear')
+        station.data_disagg['ILWR'] = ase_day_interp * sbc * station.data_disagg.temp**4
+
+
 #	station.data_disagg['ILWR'][-1] =station.data_disagg['ILWR'][-2]
     # plot(data_obs_hourly.ilwr,station.data_disagg.ILWR)
 

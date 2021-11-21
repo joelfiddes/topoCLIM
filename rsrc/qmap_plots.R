@@ -1,25 +1,29 @@
 args = commandArgs(trailingOnly=TRUE)
-wd = args[1]
-sample = args[2]
+wd = args[1] # wd = '/home/joel/sim/qmap/tclim_points_paper/'
+sample = args[2]#189
 daily_obs = args[3]
 
+
 # meteo
-daily_met = "/home/joel/sim/qmap/wfj_station_daily.csv"
-monthly_met = "/home/joel/sim/qmap/wfj_station_monthly.csv"
-doy_met = "/home/joel/sim/qmap/wfj_station_doy.csv"
-dail_met = read.csv(daily_met)
+monthly_met = "../examples/eval/wfj_station_monthly.csv"
+doy_met = "../examples/eval/wfj_station_doy.csv"
 monthly_met = read.csv(monthly_met)
 doy_met = read.csv(doy_met)
 
 
+#indir = "/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc1_1D/"
+#daily_obs  = '/home/joel/sim/qmap/GR_data/sim/g4//forcing/meteoc1_1D.csv' 
+
 indir=paste0(wd, '/s',sample,'/')
-pdf(paste0(indir,"evalplot_singleModel_season.pdf"),height=20, width=10)
+
+pdf(paste0(indir,"evalplot_singleModel_season_REV.pdf"),height=20, width=10)
 par(mfrow=c(5,2))
+par(mar=c(5,5,4,2))
 require(wesanderson)
 
 
-#indir = "/home/joel/sim/qmap/topoclim_test_hpc/g3/smeteoc1_1D/"
-#daily_obs  = '/home/joel/sim/qmap/GR_data/sim/g4//forcing/meteoc1_1D.csv' 
+
+
 # the period to do quantile mapping over (obs and sim must overlap!)
 startDateQmap = "1990-01-01"
 endDateQmap = "1999-12-31"
@@ -75,7 +79,7 @@ print(var)
 	if(var=="tas"){obsindex <-6; convFact <-1; xlab <- "Mean daily air temperature [K]"} # K
 	if(var=="tasmin"){obsindex <-11; convFact <-1;  xlab <- "Min daily air temperature [K]"} # K
 	if(var=="tasmax"){obsindex <-10; convFact <-1 ;  xlab <- "Max daily air temperature [K]"} # K
-		if(var=="pr"){obsindex <-12; convFact <-(1);  xlab <- "Mean daily precipitation rate [Kg m-2 s-1]"} # kgm-2s-1 obs are in mean mm/hr for that day convert to mm/s (cordex)
+		if(var=="pr"){obsindex <-12; convFact <-(1);  xlab <- "Mean daily precipitation rate [Kg m^-2 s^-1]"} # kgm-2s-1 obs are in mean mm/hr for that day convert to mm/s (cordex)
 			if(var=="ps"){obsindex <-9; convFact <-1 ;  xlab <- "Mean daily air pressure [Pa]" }# Pa
 				if(var=="hurs"){obsindex <-7; convFact <-1;  xlab <- "Mean daily relative humidity [%]" } # % 0-100
 					if(var=="rsds"){obsindex <-2; convFact <-1 ;  xlab <- "Mean daily incoming shortwave radiation [W m-2]"}	# Wm-2
@@ -87,11 +91,12 @@ print(var)
  	if(var=="tas"){obsindex <-6;metindex <-2; convFact <-1;convFactMet<- 1; xlab <- "Mean daily air temperature [K]"} # K
 	if(var=="tasmin"){obsindex <-11; convFact <-1;convFactMet<- 1;  xlab <- "Min daily air temperature [K]"} # K
 	if(var=="tasmax"){obsindex <-10; convFact <-1;convFactMet<- 1 ;  xlab <- "Max daily air temperature [K]"} # K
-		if(var=="pr"){obsindex <-12;metindex <-10; convFact <-(1);convFactMet<- 0.000555; xlab <- "Mean daily precipitation rate [Kg m-2 s-1]"} # kgm-2s-1 obs are in mean mm/hr for that day convert to mm/s (cordex)
+		if(var=="pr"){obsindex <-12;metindex <-10; convFact <-(1);convFactMet<- 0.000555; xlab <-  ~paste("Mean daily precipitation rate [Kg m"^-2 ,"s"^-1,"]")} # expression(Speed ~ ms^-1 ~ by ~ impeller)    kgm-2s-1 obs are in mean mm/hr for that day convert to mm/s (cordex)
+			
 			if(var=="ps"){obsindex <-9; metindex <-3;convFact <-1;convFactMet<- 1 ;  xlab <- "Mean daily air pressure [Pa]" }# Pa
 				if(var=="hurs"){obsindex <-7;metindex <-3 ;convFact <-1;convFactMet<- 100;  xlab <- "Mean daily relative humidity [%]" } # % 0-100
-					if(var=="rsds"){obsindex <-2; metindex <-6;convFact <-1;convFactMet<- 1 ;  xlab <- "Mean daily incoming shortwave radiation [W m-2]"}	# Wm-2
-						if(var=="rlds"){obsindex <-3; metindex <-8;convFact <-1;convFactMet<- 1 ;  xlab <- "Mean daily incoming longwave radiation [W m-2]"}# Wm-2
+					if(var=="rsds"){obsindex <-2; metindex <-6;convFact <-1;convFactMet<- 1 ;  xlab <- ~paste("Mean daily incoming shortwave radiation [W m"^-2,"]")}	# Wm-2
+						if(var=="rlds"){obsindex <-3; metindex <-8;convFact <-1;convFactMet<- 1 ;  xlab <- ~paste("Mean daily incoming longwave radiation [W m"^-2,"]")}# Wm-2
 							if(var=="uas"){obsindex <-8; convFact <-1;convFactMet<- 1}# ms-1
 								if(var=="vas"){obsindex <-8; convFact <-1;convFactMet<- 1}# ms-1
 								# where is DW?
@@ -100,11 +105,11 @@ print(var)
   doy_metPar= doy_met[,metindex]*convFactMet
   month_metPar= monthly_met[,metindex]*convFactMet
 
-# require(caTools)
-#   if (var =="pr"){
+require(caTools)
+  if (var =="pr"){
 
-#   	doy_metPar = runmean(doy_metPar,10)
-#   }
+  	doy_metPar = runmean(doy_metPar,10)
+  }
 
 	# read and convert obs unit
 	obs_var=obs[,obsindex]*convFact	
@@ -215,7 +220,7 @@ obs_year = aggregate(obs_cp_period, list(years_obs), mean)
 #===envelope plots========================================================================
 if (var == 'tas'){
 
-	pdf(paste0(indir,var,"TS2.pdf"))
+	pdf(paste0(indir,var,"TS2_REV.pdf"))
 	# caption: Mean annual near surface air temperature at the Weissfluhjoch (2540m asl)  showing corrected historical, RCP2.6 and RCP8.5 timseries. Observations and uncorrected historical data are also shown for comparison. The coloured envelops indicate +/- 1 SD of the model spread and multi-modal mean is given by the bold line.
 	lwd=3
 	plot(rcp26_year$Group.1, rcp26_year$MEAN-273.15, xlim=c(1979,2100),ylim=c(270-273.15,280-273.15), type='l', col="white", lwd=lwd, ylab="Air temperature (°C)", xlab=" ")
@@ -250,7 +255,7 @@ if (var == 'tas'){
 
 if (var == 'tas'){
 
-	pdf(paste0(indir,var,"TS2_NOQMAP.pdf"))
+	pdf(paste0(indir,var,"TS2_NOQMAP_REV.pdf"))
 	# caption: Mean annual near surface air temperature at the Weissfluhjoch (2540m asl)  showing corrected historical, RCP2.6 and RCP8.5 timseries. Observations and uncorrected historical data are also shown for comparison. The coloured envelops indicate +/- 1 SD of the model spread and multi-modal mean is given by the bold line.
 	lwd=3
 	plot(rcp26_year$Group.1, rcp26_year$MEAN, xlim=c(1979,2100),ylim=c(270,280), type='l', col=mycol[1], lwd=lwd, ylab="Air temperature (K)", xlab=" ")
