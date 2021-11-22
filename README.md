@@ -25,17 +25,18 @@ cd topoCLIM
 
 It's recommended (but not essential) that you use some sort of python environment manager, such as using the Anaconda distribution and creating an environment (in the code below called "`tclim`"), or using `virtualenv` instead.  This getting started will use Anaconda.
 
+Set up Python 3 env (Python > 3.6 supported) and install Python packages in requirements.txt:
+
 ```{bash}
-conda create -n tclim python
+conda create -n tclim python=3.9
 conda activate tclim
 (tclim) pip install -r requirements.txt
 ```
 Install R and R package dependencies:
 
 ```{bash}
-conda install -c conda-forge r-base
-conda install -c conda-forge r-ncdf4
-conda install -c omgarcia r-qmap (fails currently)
+sudo apt-get r-base
+Rscript -e 'install.packages("ncdf4","qmap," repos="http://cran.us.r-project.org")'
 ```
 Install ESGF client and dependencies for downloading CORDEX data:
 ```{bash}
