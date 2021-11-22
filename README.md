@@ -10,6 +10,7 @@ Please see the following publication for further details:
 >Fiddes, J., Aalstad, K., and Lehning, M.: TopoCLIM: Rapid topography-based downscaling of regional climate model output in complex terrain v.1.0, Geosci. model Dev. Discuss. [preprint], https://doi.org/10.5194/gmd-2021-60, in review, 2021.
 
 <img src="./Figure1.png" width="400" alt="Scheme overview" class="center">
+Figure 1: Overview of the main TopoCLIM processes.
 
 ## Getting started
 
@@ -43,9 +44,14 @@ conda install -c conda-forge defusedxml
 conda install -c conda-forge myproxyclient
 
 ```
+install Climate Data Operators (cdo) used in postprocessing CORDEX data:
 
+```{bash}
+conda install -c conda-forge cdo
+```
 ### Running the example
 A minimal example for a single point (WFJ) and two climate models is provided here including raw cordex and toposcale downscaled data so it can be run straight out of the box:
+
 ```
 cd ./topoCLIM/tclim
 python tclim_run.py ../examples/ ../examples/tscale ../examples/cordex/ 

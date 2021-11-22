@@ -1,3 +1,20 @@
+"""This helper function postprocesses downloaded CORDEX data. (1) reprojects to long lat (2) crop to domain defined by 
+"mydomain" (3) merges data by time (4) merges data by variable
+    Parameters:
+        cordex_domain (str): cordex experiment domain e.g. "EUR-44"
+        outdir (str): Path tpo write results to e.g. /path/to/results
+        mydomain (str): Path to shapefile which defines your domain
+        output_res  (str): output resolution of grid (degrees)
+
+    Returns:
+        NULL (files written to outdir)
+    
+
+    References:
+
+
+   """
+
 import glob
 import os
 import xarray as xr
