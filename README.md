@@ -9,6 +9,7 @@ Please see the following publication for further details:
 
 >Fiddes, J., Aalstad, K., and Lehning, M.: TopoCLIM: Rapid topography-based downscaling of regional climate model output in complex terrain v.1.0, Geosci. model Dev. Discuss. [preprint], https://doi.org/10.5194/gmd-2021-60, in review, 2021.
 
+![alt Figure 1](./Figure1.pdf)
 ## Getting started
 
 ### Installing the `topoCLIM` python module
