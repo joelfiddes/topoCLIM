@@ -31,6 +31,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 import logging
+import datetime
 
 
 # ===============================================================================
@@ -148,6 +149,8 @@ def calendarNinja(nc, nc_standard_hist, nc_standard_clim):
 
 
 def resamp_1D(path_inpt, freq='1D'):  # create 1h wfj era5 obs data by
+    # parse path_inpt thoroughly
+    tscaleID = path_inpt.split("/")[-1].split(".")[0]  
 
     # freq = '1H' or '1D'
     # converts fsm format to one used by the code
@@ -163,7 +166,7 @@ def resamp_1D(path_inpt, freq='1D'):  # create 1h wfj era5 obs data by
                 1,
                 2,
                 3]},
-        date_parser=lambda x: pd.datetime.strptime(
+        date_parser=lambda x: datetime.datetime.strptime(
             x,
             '%Y %m %d %H'))
 
@@ -176,7 +179,7 @@ def resamp_1D(path_inpt, freq='1D'):  # create 1h wfj era5 obs data by
     # add snow rain fraction to get total precip.
     df_1d['Pr'] = df_1d.iloc[:, 3] + df_1d.iloc[:, 2]
     df_1d.to_csv(
-        path_or_buf=path_inpt.split('.')[0] +
+        path_or_buf=tscaleID +
         '_' +
         freq +
         '.csv',
@@ -196,7 +199,7 @@ def resamp_1D(path_inpt, freq='1D'):  # create 1h wfj era5 obs data by
             'TAMIN',
             'Pr'],
         sep=',')
-    return(path_inpt.split('.')[0] + '_' + freq + '.csv')
+    return(tscaleID + '_' + freq + '.csv')
 
 
 def resamp_1H(path_inpt, freq='1H'):  # create 1h wfj era5 obs data by
@@ -213,7 +216,7 @@ def resamp_1H(path_inpt, freq='1H'):  # create 1h wfj era5 obs data by
                 1,
                 2,
                 3]},
-        date_parser=lambda x: pd.datetime.strptime(
+        date_parser=lambda x: datetime.datetime.strptime(
             x,
             '%Y %m %d %H'))
 

@@ -4,20 +4,22 @@ import xarray as xr
 import pandas as pd
 import geopandas as gpd
 
-outdir = "/home/joel/sim/qmap/raw_cordex/"
-domain = 'EUR-44'
+cordex_domain = sys.argv[1] # CORDEX domain eg "EUR-44"
+outdir = sys.argv[2] # where to write results eg /path/to/results
+mydomain = sys.argv[3] # path to shapefile which defines your domain
+output_res = sys.argv[4] # output resolution of grid (degrees)
+
+# fixed
 time_frequency = 'day'  # 3hr' #
 ts_dir = outdir + "aresult/"
-#era5spatialRef = "/home/joel/sim/qmap/GR_data/spatial/idPoly.shp"
-era5spatialRef = "/home/joel/sim/qmap/raw_cordex/aspatial/idPoly.shp"
-era5spatialRef = "/home/joel/manuscripts/qmap/paper_specific_code/ch_border.shp"
+
 # define domain here based on era5 domain
-era5ref = gpd.read_file(era5spatialRef).total_bounds
+era5ref = gpd.read_file(mydomain).total_bounds
 lonE = era5ref[2]  # int(5)
 lonW = era5ref[0]  # int(11)
 latS = era5ref[1]  # int(45)
 latN = era5ref[3]  # int(48)
-res = 0.44  # output grid resolution in degrees
+res = output_res # output grid resolution in degrees
 
 # define and construct coords config for remapbil which  describes reprojection
 coordsPath = outdir + "coords.txt"

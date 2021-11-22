@@ -1,5 +1,5 @@
-require(qmap)
-require(ncdf4)
+suppressWarnings(require(qmap))
+suppressWarnings(require(ncdf4))
 #require(caTools)
 ##require(pracma)
 #require(hydroGOF)
@@ -52,9 +52,9 @@ startDateHist = "1980-01-01"
 endDateHist = "2004-12-31"
 
 # common rcp periods of models - perhaps these can/should be 1 set, in practice is the same
-startDateRcp26 = "2006-01-02"
+startDateRcp26 = "2006-01-01"
 endDateRcp26 = "2099-12-31"
-startDateRcp85 = "2006-01-02"
+startDateRcp85 = "2006-01-01"
 endDateRcp85 = "2099-12-31"
 
 # the period to do quantile mapping over (obs and sim must overlap!)
@@ -206,7 +206,7 @@ print(var)
 		cordex_dates  = as.Date(datesPl)
 
 		# comment this line for examples
-		if(any(is.na(tas)==TRUE)){print(paste0("no data found in variable, skipping this file", hist_file));next}
+		#if(any(is.na(tas)==TRUE)){print(paste0("no data found in variable, skipping this file", hist_file));next}
 		
 		# if all present and correct can now add to chain
 		modelChain_vec = c(modelChain_vec,modelChain) # available hist data
@@ -221,6 +221,8 @@ print(var)
 		
 		# extract data of common period historical timeseries 1979-2005 
 		hist_cp=tas[start_cp_cord:end_cp_cord]
+
+		
 
 		# extract dates common period historical timeseries 1979-2005 
 		cordex_dates_cp = cordex_dates[start_cp_cord:end_cp_cord]
@@ -488,7 +490,8 @@ print(var)
 		datesPl<-ISOdatetime(origin2,0,0,0,0,0,tz='UTC') + z #dates sequence
 		greg_cal_rcp  = as.Date(datesPl)
 
-		if(any(is.na(tas)==TRUE)){print(paste0("no data found in variable, skipping this file", rcp85_file));next}
+		# comment for examples
+		#if(any(is.na(tas)==TRUE)){print(paste0("no data found in variable, skipping this file", rcp85_file));next}
 
 	
 

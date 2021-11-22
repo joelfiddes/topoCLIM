@@ -34,36 +34,58 @@ Install R and R package dependencies:
 ```{bash}
 conda install -c conda-forge r-base
 conda install -c conda-forge r-ncdf4
-conda install -c omgarcia r-qmap
+conda install -c omgarcia r-qmap (fails currently)
+```
+install ESGF client and dependencies for downloading CORDEX data:
+```{bash}
+conda install -c conda-forge esgf-pyclient
+conda install -c conda-forge defusedxml
+conda install -c conda-forge myproxyclient
+
 ```
 
 ### Running the example
-A minimal example for a single point (WFJ) and three climate models is provided here including raw cordex and toposcale downscaled data so it can be run straight out of the box:
+A minimal example for a single point (WFJ) and two climate models is provided here including raw cordex and toposcale downscaled data so it can be run straight out of the box:
 ```
 cd ./topoCLIM/tclim
-python run_example.py ../examples/ 1 1
+python tclim_run.py ../examples/ ../examples/tscale ../examples/cordex/ 
 ```
+## Running a TopoCLIM job
 
-### Generating TopoSCALE timeseries
+### Generate TopoSCALE timeseries
 
 TopoSCALE is a separate python based package available at: https://github.com/joelfiddes/tscaleV2.git
 
 We include a test TopoSCALE timeseries here in "/examples" for running and testing TopoCLIM.
 
-### Downloading CORDEX
+### Download CORDEX
 
 To access CORDEX data on the Earth System Grid Federation nodes credentials are required as described here:
 https://esgf-data.dkrz.de/user/add/?next=http://esgf-data.dkrz.de/user/add/
 
-CORDEX data is downloaded using the helper script (parameters set in header):
+CORDEX data is downloaded using the helper script:
+
 ```
-python esgf_get.py
+python esgf_get.py cordex_domain openid output_dir
 ```
 
 And postprocessed:
 ```
-python esgf_post.py
+python esgf_post.py cordex_domain output_dir mydomain output_res
 ```
+Currently the code requires historical, RCP 2.6 and RCP 8.5 scenarios. *esgf_get.py* is currently configured to obtain datsets required by TopoCLIM. Future work will focus on making these scenarios configurable.
+
+### Run TopoCLIM
+Now you should be able to run your TopoCLIM jobs: 
+
+```
+cd ./topoCLIM/tclim
+python tclim_run.py workdir path2tscale path2cordex
+```
+
+Downscaled timeseries for each climate scenario and for each TopoSCALE point will be writted to the *workdir* under a folder structure corresponding to each TopoSCALE point.
+
+
 
 
 

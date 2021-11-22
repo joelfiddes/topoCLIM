@@ -2,12 +2,13 @@ import melodist
 import pandas as pd
 import glob
 import numpy as np
+
+# prescribed for ERA5/CORDEX application, would possibly need to be adjusted for another application 
 cal_period = slice('2000-01-01', '2015-12-31')
 
 
 def main(daily_cordex, hourly_obs, mylon, mylat, mytz, slope):
 
-    print(mytz)
     slope = float(slope)
 
     df_obs = pd.read_csv(hourly_obs, index_col=0, parse_dates=True)
