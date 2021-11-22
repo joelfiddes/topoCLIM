@@ -14,7 +14,7 @@ Figure 1: Overview of the main TopoCLIM processes.
 
 ## Getting started
 
-### Installing the `topoCLIM` python module
+### Installing the TopoCLIM Python module
 
 To begin you'll need a copy of the source code. Either fork the TopoCLIM repository to your own github username, or clone directly.
 
@@ -37,14 +37,14 @@ conda install -c conda-forge r-base
 conda install -c conda-forge r-ncdf4
 conda install -c omgarcia r-qmap (fails currently)
 ```
-install ESGF client and dependencies for downloading CORDEX data:
+Install ESGF client and dependencies for downloading CORDEX data:
 ```{bash}
 conda install -c conda-forge esgf-pyclient
 conda install -c conda-forge defusedxml
 conda install -c conda-forge myproxyclient
 
 ```
-install Climate Data Operators (cdo) used in postprocessing CORDEX data:
+Install Climate Data Operators (CDO) used in postprocessing CORDEX data:
 
 ```{bash}
 conda install -c conda-forge cdo
