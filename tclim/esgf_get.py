@@ -24,6 +24,7 @@ import os.path
 import logging
 from pyesgf.search import SearchConnection
 import xarray as xr
+import sys
 
 cordex_domain = sys.argv[1] # CORDEX domain [STR] eg "EUR-44"
 openid = sys.argv[2] # your ESGF openid [STR] eg 'https://esgf-data.dkrz.de/esgf-idp/openid/xxxx'

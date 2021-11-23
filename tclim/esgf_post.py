@@ -22,6 +22,7 @@ import os
 import xarray as xr
 import pandas as pd
 import geopandas as gpd
+import sys
 
 cordex_domain = sys.argv[1] # CORDEX domain eg "EUR-44"
 outdir = sys.argv[2] # where to write results eg /path/to/results
