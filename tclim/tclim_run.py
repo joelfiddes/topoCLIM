@@ -1,19 +1,22 @@
-"""
-python3
-
-This module takes post processed daily CORDEX downloads from esgf_post.py and
-produces point timeseries with standard calenders
-
-Example:
-
-
-Vars:
-
-
-Details:
-
 
 """
+    DESCRIPTION:
+        This helper function downloads CORDEX data from the ESGF network. It requires 
+        a user account to be set up first at:  
+        https://esgf-data.dkrz.de/user/add/?next=http://esgf-data.dkrz.de/user/add/
+
+    ARGS:
+        wd (str): working directory of simulation, already exists
+        tscale_dir (str): full path to location of TopoSCALE files (normally in wd)
+        cordex_path (str): full path to downloaded and processed (esgf_post.py) CORDEX data
+
+    RETURNS:
+        NULL (files written to wd)
+    
+
+
+   """
+
 import re
 import sys
 import os
@@ -24,8 +27,8 @@ import tclim_disagg as disagg
 import pandas as pd
 
 wd = sys.argv[1]
-tscale_sim_dir = sys.argv[2]
-CORDEXPATH = sys.argv[3]
+tscale_dir = sys.argv[2]
+cordex_path = sys.argv[3]
 # ===============================================================================
 # INPUT
 # ===============================================================================
@@ -38,10 +41,10 @@ CORDEXPATH = sys.argv[3]
 
 
 # get grid box
-lp = pd.read_csv(tscale_sim_dir + "/listpoints.txt")
+lp = pd.read_csv(tscale_dir + "/listpoints.txt")
 
 # find all tscale file excluding 1H and 1D ones
-tscale_files = sorted(glob.glob(tscale_sim_dir +  "/tscale*"))
+tscale_files = sorted(glob.glob(tscale_dir +  "/tscale*"))
 b = [item for item in tscale_files if '1H' not in item]
 tscale_files = [item for item in b if '1D' not in item]
 
@@ -71,7 +74,7 @@ for i in mytasks:
 
     print("Quantile mapping... ")
     cmd = ["Rscript", "../rsrc/qmap_hour_plots_daily_12.R", wd,
-           str(sample), daily_obs, str(lp.lon[i]), str(lp.lat[i]), CORDEXPATH]
+           str(sample), daily_obs, str(lp.lon[i]), str(lp.lat[i]), cordex_path]
     subprocess.check_output(cmd)
 
     cmd = ["Rscript", "../rsrc/aggregate_qmap_results.R", wd, str(sample)]

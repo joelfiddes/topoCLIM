@@ -1,21 +1,21 @@
-"""This helper function downloads CORDEX data from the ESGF network. It requires 
-    a user account to be set up first at:  
-    https://esgf-data.dkrz.de/user/add/?next=http://esgf-data.dkrz.de/user/add/
+"""
+    DESCRIPTION:
+        This helper function downloads CORDEX data from the ESGF network. It requires 
+        a user account to be set up first at:  
+        https://esgf-data.dkrz.de/user/add/?next=http://esgf-data.dkrz.de/user/add/
 
-    Parameters:
-    cordex_domain (str): cordex experiment domain e.g. "EUR-44"
-    openid (str): Your openID as configured at ESGF e.g. 'https://esgf-data.dkrz.de/esgf-idp/openid/xxxx'
-    outdir (str): Path tpo write results to e.g. /path/to/results
+    ARGS:
+        cordex_domain (str): cordex experiment domain e.g. "EUR-44"
+        openid (str): Your openID as configured at ESGF e.g. 'https://esgf-data.dkrz.de/esgf-idp/openid/xxxx'
+        outdir (str): Path tpo write results to e.g. /path/to/results
 
-    Returns:
+    RETURNS:
         NULL (files written to outdir)
     
 
     References:
-    ESGF credentials:
-       
-    ESGF client:
-        https://esgf-pyclient.readthedocs.io/en/latest/notebooks/demo/subset-cmip5.html
+        ESGF client:
+            https://esgf-pyclient.readthedocs.io/en/latest/notebooks/demo/subset-cmip5.html
 
    """
 
