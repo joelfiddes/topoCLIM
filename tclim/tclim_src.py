@@ -1,18 +1,6 @@
-# a more evolved way of tclim' ing
-
 """
 python3
 
-This module takes post processed daily CORDEX downloads from esgf_post.py and
-produces point timeseries with standard calenders
-
-Example:
-
-
-Vars:
-
-
-Details:
 
 
 """
