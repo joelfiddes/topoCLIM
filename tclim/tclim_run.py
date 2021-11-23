@@ -1,9 +1,8 @@
 
 """
     DESCRIPTION:
-        This helper function downloads CORDEX data from the ESGF network. It requires 
-        a user account to be set up first at:  
-        https://esgf-data.dkrz.de/user/add/?next=http://esgf-data.dkrz.de/user/add/
+        This script runs a main TopoCLIM process and writes to "wd" a set (1 dataset per climate scenario) 
+        of downscaled timeseries per TopoSCALE timeseries existing in "tscale_dir".
 
     ARGS:
         wd (str): working directory of simulation, already exists
