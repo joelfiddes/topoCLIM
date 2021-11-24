@@ -23,7 +23,7 @@ git clone https://github.com/joelfiddes/topoCLIM.git
 cd topoCLIM
 ```
 
-It's recommended (but not essential) that you use some sort of python environment manager, such as using the Anaconda distribution and creating an environment (in the code below called "`tclim`"), or using `virtualenv` instead.  This getting started will use Anaconda.
+It's recommended (but not essential) that you use some sort of python environment manager, such as using the Anaconda distribution and creating an environment (in the code below called "`tclim`"), or using `virtualenv` instead.  Here we will use Anaconda.
 
 Set up Python 3 env (Python >= 3.6 supported) and install Python packages in requirements.txt:
 
