@@ -5,7 +5,7 @@ This scheme specifically addresses the need for hillslope scale atmospheric forc
 
 It achieves this by utilising the previously published TopoSCALE scheme (Fiddes & Gruber, 2014) to generate a synthetic observation of current climate at hillslope scale, while accounting for a broad range of surface-atmosphere interactions. These synthetic observations are then used to debias (downscale) CORDEX climate variables using the quantile mapping method. A further temporal disaggregation step produces sub-daily fields. This approach has the advantages of other empirical-statistical methods, namely speed of use, while avoiding the need for ground data, which is often limited. It is therefore a suitable method for a wide range of remote regions where ground data is absent, incomplete, or not of sufficient length. The approach is evaluated using a network of high elevation stations across the Swiss Alps and a test application of modelling climate change impacts on Alpine snow cover is given. 
 
-Please see the following publication for further details:
+Please see the following discussion-paper for further details:
 
 >Fiddes, J., Aalstad, K., and Lehning, M.: TopoCLIM: Rapid topography-based downscaling of regional climate model output in complex terrain v.1.0, Geosci. model Dev. Discuss. [preprint], https://doi.org/10.5194/gmd-2021-60, in review, 2021.
 
@@ -25,7 +25,7 @@ cd topoCLIM
 
 It's recommended (but not essential) that you use some sort of python environment manager, such as using the Anaconda distribution and creating an environment (in the code below called "`tclim`"), or using `virtualenv` instead.  This getting started will use Anaconda.
 
-Set up Python 3 env (Python > 3.6 supported) and install Python packages in requirements.txt:
+Set up Python 3 env (Python >= 3.6 supported) and install Python packages in requirements.txt:
 
 ```{bash}
 conda create -n tclim python=3.9
