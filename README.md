@@ -36,7 +36,7 @@ Install R and R package dependencies:
 
 ```{bash}
 sudo apt-get r-base
-Rscript -e 'install.packages("ncdf4","qmap," repos="http://cran.us.r-project.org")'
+Rscript -e 'install.packages(c("ncdf4","qmap"), repos="http://cran.us.r-project.org")'
 ```
 Install ESGF client and dependencies for downloading CORDEX data:
 ```{bash}
@@ -80,7 +80,7 @@ And postprocessed:
 ```
 python esgf_post.py cordex_domain output_dir mydomain output_res
 ```
-Currently the code requires historical, RCP 2.6 and RCP 8.5 scenarios. *esgf_get.py* is currently configured to obtain datsets required by TopoCLIM. Future work will focus on making these scenarios configurable.
+Currently the code requires historical, RCP 2.6 and RCP 8.5 scenarios. *esgf_get.py* is currently configured to obtain datasets required by TopoCLIM. Future work will focus on making these scenarios configurable.
 
 ### Run TopoCLIM
 Now you should be able to run your TopoCLIM jobs: 
@@ -90,7 +90,7 @@ cd ./topoCLIM/tclim
 python tclim_run.py workdir path2tscale path2cordex
 ```
 
-Downscaled timeseries for each climate scenario and for each TopoSCALE point will be writted to the *workdir* under a folder structure corresponding to each TopoSCALE point.
+Downscaled timeseries for each climate scenario and for each TopoSCALE point will be written to the *workdir* under a folder structure corresponding to each TopoSCALE point.
 
 
 

@@ -18,6 +18,12 @@ daily_obs = args[3]
 mylon = as.numeric(args[4])
 mylat = as.numeric(args[5])
 CORDEXPATH = args[6]
+startDateHist = "1980-01-01" # start common historical period of era5 TopoSCALE datset and CORDEX
+endDateHist = "2004-12-31" # end common historical period of era5 TopoSCALE datset and CORDEX
+startDateRcp= "2006-01-01" # start Date CORDEX RCP data
+endDateRcp = "2099-12-31" # end Date CORDEX RCP data
+startDateQmap = "1980-01-01" # start date quantile mapping period
+endDateQmap = "2004-12-31"# end date quantile mapping period
 
 # wd='/home/joel/sim/qmap/tclim_wfj/'
 # sample = "tscale_1_1D"
@@ -29,7 +35,23 @@ CORDEXPATH = args[6]
 # linearly resample 3h era5 to 1h and cpture path as variable
 #daily_obs = system2(command = "python", args = paste( "resample_timeseries.py" , path_inp), stdout=TRUE)
 
-		
+# DAtes
+# common historical period of models
+startDateHist = "1980-01-01"
+endDateHist = "2004-12-31"
+
+# common rcp periods of models - perhaps these can/should be 1 set, in practice is the same
+startDateRcp26 = "2006-01-01"
+endDateRcp26 = "2099-12-31"
+startDateRcp85 = "2006-01-01"
+endDateRcp85 = "2099-12-31"
+
+# the period to do quantile mapping over (obs and sim must overlap!)
+startDateQmap = "1980-01-01"
+endDateQmap = "2004-12-31"
+
+# examples
+#endDateQmap = "2003-12-31"		
 
 # Setup ========================================================================
 indir=paste0(wd, '/s',sample)
@@ -47,23 +69,6 @@ rcp85_files = files[ grep('rcp85',files)]
 if ( length(hist_files)==0){print("ERROR! No cordex files found!")}
 # different models have different time spans so need to define common periods where all models have data
 
-# common historical period of models
-startDateHist = "1980-01-01"
-endDateHist = "2004-12-31"
-
-# common rcp periods of models - perhaps these can/should be 1 set, in practice is the same
-startDateRcp26 = "2006-01-01"
-endDateRcp26 = "2099-12-31"
-startDateRcp85 = "2006-01-01"
-endDateRcp85 = "2099-12-31"
-
-# the period to do quantile mapping over (obs and sim must overlap!)
-startDateQmap = "1980-01-01"
-
-# examples
-#endDateQmap = "2003-12-31"
-
-endDateQmap = "2004-12-31"
 
 
 

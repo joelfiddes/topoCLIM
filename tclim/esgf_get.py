@@ -7,7 +7,11 @@
     ARGS:
         cordex_domain (str): cordex experiment domain e.g. "EUR-44"
         openid (str): Your openID as configured at ESGF e.g. 'https://esgf-data.dkrz.de/esgf-idp/openid/xxxx'
-        outdir (str): Path tpo write results to e.g. /path/to/results
+        outdir (str): Path to write results to e.g. /path/to/results
+        xstartIndex (interger): Startindexing  slice in x direction (left to right) to reduce array size for download
+        xendIndex (interger): End index  slice in x direction (left to right) to reduce array size for download
+        ystartIndex (interger): Start index  slice in y direction (top to bottom) to reduce array size for download
+        yendIndex (interger): End index  slice in y direction (top to bottom) to reduce array size for download
 
     RETURNS:
         NULL (files written to outdir)
@@ -16,6 +20,9 @@
     References:
         ESGF client:
             https://esgf-pyclient.readthedocs.io/en/latest/notebooks/demo/subset-cmip5.html
+
+    Example:
+        python esgf_get.py EUR-44 https://esgf-data.dkrz.de/esgf-idp/openid/xxxx /path/to/results 40 60 40 50
 
    """
 
@@ -29,8 +36,10 @@ import sys
 cordex_domain = sys.argv[1] # CORDEX domain [STR] eg "EUR-44"
 openid = sys.argv[2] # your ESGF openid [STR] eg 'https://esgf-data.dkrz.de/esgf-idp/openid/xxxx'
 outdir = sys.argv[3] # where to write results [STR] eg /path/to/results
-
-
+xstartIndex = sys.argv[4] # Startindexing  slice in x direction (left to right) to reduce array size for download
+xendIndex = sys.argv[5]# End index  slice in x direction (left to right) to reduce array size for download
+ystartIndex = sys.argv[6]# Start index  slice in y direction (top to bottom) to reduce array size for download
+yendIndex = sys.argv[7] # End index  slice in y direction (top to bottom) to reduce array size for download
 
 # fixed pameters
 project = 'CORDEX' # eg CMIP6
@@ -63,11 +72,7 @@ vars = [
     'rlds']  # ,'sfcWind'
 expers = ['rcp26', 'historical', 'rcp85']
 
-# now we do a simple index method to extract bbox (not necessary but makes download smaller)
-lonstart = 40
-lonend = 60
-latstart = 40
-latend = 50
+
 
 # logon manager
 lm = LogonManager()
@@ -95,7 +100,7 @@ for exper in expers:
 
         ctx = conn.new_context(
             project='CORDEX',
-            domain='EUR-44',
+            domain=cordex_domain,
             experiment=exper,
             time_frequency=time_frequency,
             variable=var
@@ -137,7 +142,9 @@ for exper in expers:
                 #rp = ds[rotate_pole]
                 da = ds[myvar]
                 #da = da.sel(lat=slice(latS, latN), lon=slice(lonE, lonW))
-                da2 = da[:, latstart:latend, lonstart:lonend]
+
+                # now we do a simple index method to extract bbox (not necessary but makes download smaller)
+                da2 = da[:, ystartIndex:yendIndex, xstartIndex:xendIndex]
 
                 da2.to_netcdf(outdir + outname)
                 logging.info(outname + " done!")

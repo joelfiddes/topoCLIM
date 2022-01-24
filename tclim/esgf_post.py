@@ -6,7 +6,7 @@
 
     ARGS:
         cordex_domain (str): cordex experiment domain e.g. "EUR-44"
-        outdir (str): Path tpo write results to e.g. /path/to/results
+        outdir (str): Path to write results to e.g. /path/to/results
         mydomain (str): Path to shapefile which defines your domain
         output_res  (str): output resolution of grid (degrees)
 
