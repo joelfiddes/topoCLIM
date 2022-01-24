@@ -77,7 +77,7 @@ for i in mytasks:
         continue
 
     print("Quantile mapping... ")
-    cmd = ["Rscript", "../rsrc/qmap_hour_plots_daily_12.R", wd,
+    cmd = ["Rscript", "../rsrc/qmap_hour.R", wd,
            str(sample), daily_obs, str(lp.lon[i]), str(lp.lat[i]), cordex_path,  startDateHist ,endDateHist, startDateRcp.endDateRcp, startDateQmap ,endDateQmap ]
     subprocess.check_output(cmd)
 
