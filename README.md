@@ -82,6 +82,16 @@ python esgf_post.py cordex_domain output_dir mydomain output_res
 ```
 Currently the code requires historical, RCP 2.6 and RCP 8.5 scenarios. *esgf_get.py* is currently configured to obtain datasets required by TopoCLIM. Future work will focus on making these scenarios configurable.
 
+### Configure the TopoCLIM run
+We use the ini config file format to contain parameters used in a simulation. This promotes reproducability as a config file can be stored with simulation results, permitting re-runs. They can also be committed to a version controlled repository. The following parameters are defined:
+
+startDateHist (str): start common historical period of era5 TopoSCALE datset and CORDEX in format YYYY-MM-DD ("1980-01-01")
+endDateHist (str): end common historical period of era5 TopoSCALE datset and CORDEX in format YYYY-MM-DD ("2004-12-31")
+startDateRcp (str): start Date CORDEX RCP data in format YYYY-MM-DD ("2006-01-01")
+endDateRcp (str): end Date CORDEX RCP data in format YYYY-MM-DD ("2099-12-31")
+startDateQmap (str): start date quantile mapping period in format YYYY-MM-DD ("1980-01-01")
+endDateQmap (str): end date quantile mapping period in format YYYY-MM-DD ("2004-12-31")
+
 ### Run TopoCLIM
 Now you should be able to run your TopoCLIM jobs: 
 

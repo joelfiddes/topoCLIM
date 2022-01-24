@@ -6,11 +6,16 @@
 
     ARGS:
         wd (str): working directory of simulation, already exists
-        tscale_dir (str): full path to location of TopoSCALE files (normally in wd)
-        cordex_path (str): full path to downloaded and processed (esgf_post.py) CORDEX data
+        tscale_dir (str): path to location of TopoSCALE files (normally in wd)
+        cordex_path (str): path to downloaded and processed (esgf_post.py) CORDEX data
+        config (str): full to configuration file in ini format.
+
 
     RETURNS:
         NULL (files written to wd)
+
+    Example:
+        python tclim_run.py ../examples/ ../examples/tscale ../examples/cordex/  config.ini
     
 
 
@@ -24,10 +29,20 @@ import subprocess
 import tclim_src as tsrc
 import tclim_disagg as disagg
 import pandas as pd
+from configobj import ConfigObj
 
 wd = sys.argv[1]
 tscale_dir = sys.argv[2]
 cordex_path = sys.argv[3]
+config = ConfigObj(wd + "/config.ini")
+
+# Define dates from config
+startDateHist = config["Dates"]["startDateHist"] #"1980-01-01" # start common historical period of era5 TopoSCALE datset and CORDEX
+endDateHist = config["Dates"]["endDateHist"] #"2004-12-31" # end common historical period of era5 TopoSCALE datset and CORDEX
+startDateRcp= config["Dates"]["startDateRcp"] #"2006-01-01" # start Date CORDEX RCP data
+endDateRcp = config["Dates"]["endDateRcp"] #"2099-12-31" # end Date CORDEX RCP data
+startDateQmap = config["Dates"]["startDateQmap"] #"1980-01-01" # start date quantile mapping period
+endDateQmap = config["Dates"]["endDateQmap"] #"2004-12-31"# end date quantile mapping period
 
 # get grid box
 lp = pd.read_csv(tscale_dir + "/listpoints.txt")
@@ -63,7 +78,7 @@ for i in mytasks:
 
     print("Quantile mapping... ")
     cmd = ["Rscript", "../rsrc/qmap_hour_plots_daily_12.R", wd,
-           str(sample), daily_obs, str(lp.lon[i]), str(lp.lat[i]), cordex_path]
+           str(sample), daily_obs, str(lp.lon[i]), str(lp.lat[i]), cordex_path,  startDateHist ,endDateHist, startDateRcp.endDateRcp, startDateQmap ,endDateQmap ]
     subprocess.check_output(cmd)
 
     cmd = ["Rscript", "../rsrc/aggregate_qmap_results.R", wd, str(sample)]

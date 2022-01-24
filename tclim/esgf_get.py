@@ -36,10 +36,10 @@ import sys
 cordex_domain = sys.argv[1] # CORDEX domain [STR] eg "EUR-44"
 openid = sys.argv[2] # your ESGF openid [STR] eg 'https://esgf-data.dkrz.de/esgf-idp/openid/xxxx'
 outdir = sys.argv[3] # where to write results [STR] eg /path/to/results
-xstartIndex = sys.argv[4] # Startindexing  slice in x direction (left to right) to reduce array size for download
-xendIndex = sys.argv[5]# End index  slice in x direction (left to right) to reduce array size for download
-ystartIndex = sys.argv[6]# Start index  slice in y direction (top to bottom) to reduce array size for download
-yendIndex = sys.argv[7] # End index  slice in y direction (top to bottom) to reduce array size for download
+xstartIndex = int(sys.argv[4]) # Startindexing  slice in x direction (left to right) to reduce array size for download
+xendIndex = int(sys.argv[5]) # End index  slice in x direction (left to right) to reduce array size for download
+ystartIndex = int(sys.argv[6]) # Start index  slice in y direction (top to bottom) to reduce array size for download
+yendIndex = int(sys.argv[7]) # End index  slice in y direction (top to bottom) to reduce array size for download
 
 # fixed pameters
 project = 'CORDEX' # eg CMIP6
